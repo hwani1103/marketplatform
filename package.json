@@ -9,10 +9,10 @@
     "lint": "turbo run lint",
     "clean": "turbo run clean",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "db:generate": "dotenv -e .env -- npx prisma generate --schema=packages/database/prisma/schema.prisma",
-    "db:migrate": "dotenv -e .env -- npx prisma migrate dev --schema=packages/database/prisma/schema.prisma",
-    "db:studio": "dotenv -e .env -- npx prisma studio --schema=packages/database/prisma/schema.prisma",
-    "db:push": "dotenv -e .env -- npx prisma db push --schema=packages/database/prisma/schema.prisma"
+    "db:generate": "dotenv -e .env -- pnpm --filter @market-regime/database run generate",
+    "db:migrate": "dotenv -e .env -- pnpm --filter @market-regime/database run migrate",
+    "db:studio": "dotenv -e .env -- pnpm --filter @market-regime/database run studio",
+    "db:push": "dotenv -e .env -- pnpm --filter @market-regime/database run push"
   },
   "devDependencies": {
     "turbo": "^2.3.0",
