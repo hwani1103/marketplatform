@@ -1,0 +1,26 @@
+// This is a copy of the main schema for web app
+// Points to packages/database/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Raw Indicator Data (from external APIs)
+model IndicatorRaw {
+  id        String   @id @default(cuid())
+  symbol    String
+  value     Float
+  timestamp DateTime
+  source    String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([symbol, timestamp])
+  @@map("indicators_raw")
+}
