@@ -11,12 +11,12 @@ datasource db {
 
 // V2: User Management
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  passwordHash String?
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  name         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   comments  Comment[]
 
@@ -31,7 +31,7 @@ model IndicatorRaw {
   timestamp DateTime
   source    String   // FRED, Yahoo Finance
   metadata  Json?    // Additional metadata
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([symbol, timestamp])
   @@map("indicators_raw")
@@ -46,17 +46,17 @@ model IndicatorProcessed {
   // Moving Averages
   ma20         Float?
   ma60         Float?
-  maDeviation  Float?   // % deviation from MA
+  maDeviation  Float?   @map("ma_deviation") // % deviation from MA
 
   // Z-score
-  zScore       Float?
+  zScore       Float?   @map("z_score")
 
   // Layer 1 outputs
-  trendShort   String?  // UP, DOWN, FLAT
-  positionMid  String?  // ABOVE_MA, BELOW_MA
+  trendShort   String?  @map("trend_short")  // UP, DOWN, FLAT
+  positionMid  String?  @map("position_mid")  // ABOVE_MA, BELOW_MA
 
   timestamp    DateTime
-  calculatedAt DateTime @default(now())
+  calculatedAt DateTime @default(now()) @map("calculated_at")
 
   @@index([symbol, timestamp])
   @@map("indicators_processed")
@@ -68,20 +68,20 @@ model LayerState {
   timestamp       DateTime @unique
 
   // Layer 2: Risk Environment
-  riskState       String   // RISK_ON, NEUTRAL, RISK_OFF
-  riskScore       Float?
+  riskState       String   @map("risk_state") // RISK_ON, NEUTRAL, RISK_OFF
+  riskScore       Float?   @map("risk_score")
 
   // Layer 3: Liquidity Environment
-  liquidityState  String   // EASING, NEUTRAL, TIGHTENING
-  liquidityScore  Float?
+  liquidityState  String   @map("liquidity_state") // EASING, NEUTRAL, TIGHTENING
+  liquidityScore  Float?   @map("liquidity_score")
 
   // Layer 4: Structure & Stability
-  structureState  String   // ALIGNED, CONFLICT
-  stabilityLevel  String   // HIGH, MEDIUM, LOW
+  structureState  String   @map("structure_state") // ALIGNED, CONFLICT
+  stabilityLevel  String   @map("stability_level") // HIGH, MEDIUM, LOW
 
   // Supporting data
   metadata        Json?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(now()) @map("created_at")
 
   @@index([timestamp])
   @@map("layer_states")
@@ -96,22 +96,22 @@ model MarketRegime {
 
   // Human-readable description (from LLM)
   description     String
-  descriptionEn   String?
+  descriptionEn   String?   @map("description_en")
 
   // States
-  riskState       String
-  liquidityState  String
-  stabilityLevel  String
+  riskState       String    @map("risk_state")
+  liquidityState  String    @map("liquidity_state")
+  stabilityLevel  String    @map("stability_level")
 
   // Duration tracking
-  startDate       DateTime
-  endDate         DateTime?
-  durationDays    Int       @default(0)
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime? @map("end_date")
+  durationDays    Int       @default(0) @map("duration_days")
 
   // Metadata
   metadata        Json?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@index([startDate])
   @@index([regime])
@@ -121,12 +121,12 @@ model MarketRegime {
 // V2: Comments on regimes or indicators
 model Comment {
   id         String   @id @default(cuid())
-  userId     String
-  targetType String   // 'regime' or 'indicator'
-  targetId   String
+  userId     String   @map("user_id")
+  targetType String   @map("target_type") // 'regime' or 'indicator'
+  targetId   String   @map("target_id")
   content    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
