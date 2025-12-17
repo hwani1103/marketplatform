@@ -1,0 +1,135 @@
+// Prisma Schema for Market Regime Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// V2: User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  passwordHash String?
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments  Comment[]
+
+  @@map("users")
+}
+
+// Raw Indicator Data (from external APIs)
+model IndicatorRaw {
+  id        String   @id @default(cuid())
+  symbol    String   // S&P500, VIX, 10Y, DXY, etc.
+  value     Float
+  timestamp DateTime
+  source    String   // FRED, Yahoo Finance
+  metadata  Json?    // Additional metadata
+  createdAt DateTime @default(now())
+
+  @@index([symbol, timestamp])
+  @@map("indicators_raw")
+}
+
+// Layer 1: Processed Indicators (Normalized)
+model IndicatorProcessed {
+  id           String   @id @default(cuid())
+  symbol       String
+  value        Float
+
+  // Moving Averages
+  ma20         Float?
+  ma60         Float?
+  maDeviation  Float?   // % deviation from MA
+
+  // Z-score
+  zScore       Float?
+
+  // Layer 1 outputs
+  trendShort   String?  // UP, DOWN, FLAT
+  positionMid  String?  // ABOVE_MA, BELOW_MA
+
+  timestamp    DateTime
+  calculatedAt DateTime @default(now())
+
+  @@index([symbol, timestamp])
+  @@map("indicators_processed")
+}
+
+// Layer 2-4: Market State
+model LayerState {
+  id              String   @id @default(cuid())
+  timestamp       DateTime @unique
+
+  // Layer 2: Risk Environment
+  riskState       String   // RISK_ON, NEUTRAL, RISK_OFF
+  riskScore       Float?
+
+  // Layer 3: Liquidity Environment
+  liquidityState  String   // EASING, NEUTRAL, TIGHTENING
+  liquidityScore  Float?
+
+  // Layer 4: Structure & Stability
+  structureState  String   // ALIGNED, CONFLICT
+  stabilityLevel  String   // HIGH, MEDIUM, LOW
+
+  // Supporting data
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([timestamp])
+  @@map("layer_states")
+}
+
+// Final Market Regime
+model MarketRegime {
+  id              String    @id @default(cuid())
+
+  // Regime enum
+  regime          String    // STABLE_RISK_ON, SUPPORTIVE, etc.
+
+  // Human-readable description (from LLM)
+  description     String
+  descriptionEn   String?
+
+  // States
+  riskState       String
+  liquidityState  String
+  stabilityLevel  String
+
+  // Duration tracking
+  startDate       DateTime
+  endDate         DateTime?
+  durationDays    Int       @default(0)
+
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([startDate])
+  @@index([regime])
+  @@map("market_regimes")
+}
+
+// V2: Comments on regimes or indicators
+model Comment {
+  id         String   @id @default(cuid())
+  userId     String
+  targetType String   // 'regime' or 'indicator'
+  targetId   String
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@map("comments")
+}

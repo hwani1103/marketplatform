@@ -1,0 +1,22 @@
+{
+  "name": "@market-regime/database",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio",
+    "push": "prisma db push",
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.8.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.8.0",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2"
+  }
+}
