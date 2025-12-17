@@ -57,7 +57,8 @@ class YahooFinanceClient:
                 ticker,
                 start=start_date.strftime('%Y-%m-%d'),
                 end=end_date.strftime('%Y-%m-%d'),
-                progress=False
+                progress=False,
+                auto_adjust=True
             )
 
             if data.empty:
@@ -67,12 +68,15 @@ class YahooFinanceClient:
             results = []
             for date, row in data.iterrows():
                 # 종가(Close) 사용
-                close_price = row['Close']
-                if not pd.isna(close_price):
-                    results.append({
-                        'date': date.to_pydatetime(),
-                        'value': float(close_price)
-                    })
+                try:
+                    close_price = float(row['Close'])
+                    if not pd.isna(close_price):
+                        results.append({
+                            'date': date.to_pydatetime(),
+                            'value': close_price
+                        })
+                except (ValueError, KeyError, TypeError):
+                    continue
 
             # 최신순 정렬
             results.sort(key=lambda x: x['date'], reverse=True)
