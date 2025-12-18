@@ -17,7 +17,7 @@ export async function GET(
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
-    const indicators = await prisma.indicator.findMany({
+    const indicators = await prisma.indicatorRaw.findMany({
       where: {
         symbol,
         timestamp: {
