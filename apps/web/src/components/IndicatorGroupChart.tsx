@@ -80,12 +80,12 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
           })
         )
 
-        // 데이터 구조 변환
+        // 데이터 구조 변환 (Number() 변환 필수!)
         const groupData: GroupChartData = {}
         results.forEach(({ symbol, data }) => {
           groupData[symbol] = data.map((d: any) => ({
             timestamp: new Date(d.timestamp),
-            value: d.value,
+            value: Number(d.value),  // Prisma Float/Decimal을 number로 변환
           }))
         })
 

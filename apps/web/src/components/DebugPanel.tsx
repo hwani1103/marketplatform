@@ -34,9 +34,9 @@ export default function DebugPanel() {
         if (!regimeRes.ok) throw new Error('Failed to fetch market regime')
         const marketRegime = await regimeRes.json()
 
-        // 3. Analytics for each indicator
+        // 3. Analytics for each indicator (365일 데이터 사용)
         const analyticsPromises = indicators.map((ind: any) =>
-          fetch(`/api/analytics/${ind.symbol}`).then(r => r.json())
+          fetch(`/api/analytics/${ind.symbol}?days=365`).then(r => r.json())
         )
         const analytics = await Promise.all(analyticsPromises)
 
