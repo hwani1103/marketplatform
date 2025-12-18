@@ -216,7 +216,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 gap-8">
             {INDICATOR_GROUPS.map((group) => (
-              <IndicatorGroupChart key={group.id} group={group} days={90} />
+              <IndicatorGroupChart key={group.id} group={group} />
             ))}
           </div>
         </section>

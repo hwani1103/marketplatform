@@ -3,14 +3,22 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// 간단한 Z-Score 계산 함수
-function calculateSimpleZScore(values: number[]): number {
+// Z-Score 계산 함수 (252일 rolling window 사용 - /lib/analytics.ts와 동일)
+function calculateZScore(values: number[], window: number = 252): number {
   if (values.length < 2) return 0
-  const mean = values.reduce((a, b) => a + b, 0) / values.length
-  const std = Math.sqrt(
-    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length
-  )
-  return std > 0 ? (values[values.length - 1] - mean) / std : 0
+
+  // 최근 window 기간만 사용 (또는 전체 데이터가 window보다 적으면 전체 사용)
+  const windowValues = values.slice(-Math.min(window, values.length))
+  if (windowValues.length < 2) return 0
+
+  const mean = windowValues.reduce((a, b) => a + b, 0) / windowValues.length
+  const variance = windowValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (windowValues.length - 1)
+  const std = Math.sqrt(variance)
+
+  if (std === 0) return 0
+
+  const currentValue = values[values.length - 1]
+  return (currentValue - mean) / std
 }
 
 export async function GET() {
@@ -32,11 +40,11 @@ export async function GET() {
 
     const riskData = await Promise.all(riskDataPromises)
 
-    // 각 지표의 Z-Score 계산
+    // 각 지표의 Z-Score 계산 (252일 window)
     const riskZScores = riskData.map(({ symbol, data }) => {
       if (data.length === 0) return { symbol, zscore: 0 }
       const values = data.map(d => Number(d.value))
-      const zscore = calculateSimpleZScore(values)
+      const zscore = calculateZScore(values, 252)
       // VIX는 역방향
       return { symbol, zscore: symbol === 'VIX' ? -zscore : zscore }
     })
@@ -58,7 +66,7 @@ export async function GET() {
     const liquidityZScores = liquidityData.map(({ symbol, data }) => {
       if (data.length === 0) return { symbol, zscore: 0 }
       const values = data.map(d => Number(d.value))
-      return { symbol, zscore: calculateSimpleZScore(values) }
+      return { symbol, zscore: calculateZScore(values, 252) }
     })
 
     const liquidityAvg = liquidityZScores.reduce((sum, l) => sum + l.zscore, 0) / liquidityZScores.length
@@ -78,7 +86,7 @@ export async function GET() {
     const inflationZScores = inflationData.map(({ symbol, data }) => {
       if (data.length === 0) return { symbol, zscore: 0 }
       const values = data.map(d => Number(d.value))
-      return { symbol, zscore: calculateSimpleZScore(values) }
+      return { symbol, zscore: calculateZScore(values, 252) }
     })
 
     const inflationAvg = inflationZScores.reduce((sum, i) => sum + i.zscore, 0) / inflationZScores.length

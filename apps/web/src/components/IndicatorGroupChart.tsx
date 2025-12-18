@@ -59,7 +59,7 @@ const SYMBOL_NAMES_KO: Record<string, string> = {
   USD_KRW: '원/달러',
 }
 
-export default function IndicatorGroupChart({ group, days = 90 }: Props) {
+export default function IndicatorGroupChart({ group, days = 365 }: Props) {
   const [data, setData] = useState<GroupChartData>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,10 +70,10 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
       setError(null)
 
       try {
-        // 각 심볼별로 히스토리 데이터 가져오기
+        // 각 심볼별로 히스토리 데이터 가져오기 (365일)
         const results = await Promise.all(
           group.symbols.map(async (symbol) => {
-            const res = await fetch(`/api/indicators/${symbol}?days=${days}`)
+            const res = await fetch(`/api/indicators/${symbol}?days=365`)
             if (!res.ok) throw new Error(`Failed to fetch ${symbol}`)
             const json = await res.json()
             return { symbol, data: json.data }
@@ -89,16 +89,32 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
           }))
         })
 
-        // Z-Score 계산
+        // Z-Score 계산 (252일 rolling window - /lib/analytics.ts와 동일)
         Object.keys(groupData).forEach((symbol) => {
           const values = groupData[symbol].map(d => d.value)
-          const mean = values.reduce((a, b) => a + b, 0) / values.length
-          const std = Math.sqrt(
-            values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length
-          )
 
+          // 252일 window 사용
+          const window = 252
+          const windowValues = values.slice(-Math.min(window, values.length))
+
+          if (windowValues.length < 2) {
+            groupData[symbol].forEach((point) => {
+              point.zscore = 0
+            })
+            return
+          }
+
+          const mean = windowValues.reduce((a, b) => a + b, 0) / windowValues.length
+          const variance = windowValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (windowValues.length - 1)
+          const std = Math.sqrt(variance)
+
+          // 최신 값의 Z-Score만 계산 (차트는 이 값만 사용)
+          const currentValue = values[values.length - 1]
+          const zscore = std > 0 ? (currentValue - mean) / std : 0
+
+          // 모든 포인트에 동일한 Z-Score 적용 (최신 값 기준)
           groupData[symbol].forEach((point) => {
-            point.zscore = std > 0 ? (point.value - mean) / std : 0
+            point.zscore = zscore
           })
         })
 
