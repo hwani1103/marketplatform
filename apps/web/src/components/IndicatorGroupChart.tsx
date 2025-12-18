@@ -157,9 +157,12 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
     )
   }
 
-  // 첫 번째 심볼의 타임스탬프를 labels로 사용
-  const firstSymbol = symbols[0]
-  const labels = data[firstSymbol].map(d =>
+  // 가장 많은 데이터를 가진 심볼을 찾아 labels로 사용
+  // (월별 데이터와 일별 데이터 혼재 시 일별 데이터 기준)
+  const longestSymbol = symbols.reduce((prev, curr) =>
+    data[curr].length > data[prev].length ? curr : prev
+  )
+  const labels = data[longestSymbol].map(d =>
     d.timestamp.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
   )
 
@@ -208,19 +211,28 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
     datasets: symbols.map((symbol, index) => {
       const isInverse = inverseSymbols.includes(symbol)
       const symbolName = SYMBOL_NAMES_KO[symbol] || symbol
+
+      // 데이터 길이 맞추기: longestSymbol 기준으로 매핑
+      const referenceTimestamps = data[longestSymbol].map(d => d.timestamp.getTime())
+      const symbolData = referenceTimestamps.map(refTime => {
+        const point = data[symbol].find(d => d.timestamp.getTime() === refTime)
+        if (point) {
+          const zscore = point.zscore || 0
+          return isInverse ? -zscore : zscore
+        }
+        return null  // 해당 날짜에 데이터 없으면 null
+      })
+
       return {
         label: isInverse ? `${symbolName} (역)` : symbolName,
-        data: data[symbol].map(d => {
-          const zscore = d.zscore || 0
-          // 역방향 지표는 부호 반전
-          return isInverse ? -zscore : zscore
-        }),
+        data: symbolData,
         borderColor: colors[index % colors.length],
         backgroundColor: colors[index % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
         borderWidth: 2,
         tension: 0.3,
         pointRadius: 0,
         pointHoverRadius: 4,
+        spanGaps: true,  // null 값 건너뛰고 선 연결
       }
     }),
   }
