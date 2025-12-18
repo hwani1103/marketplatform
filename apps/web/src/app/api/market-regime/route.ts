@@ -10,8 +10,8 @@ export async function GET() {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
-    // Layer 2: Risk Environment
-    const riskSymbols = ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX']
+    // Layer 2: Risk Environment (한국 투자자 중심으로 USD_KRW 추가)
+    const riskSymbols = ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX', 'USD_KRW']
     const riskDataPromises = riskSymbols.map(async (symbol) => {
       const data = await prisma.indicatorRaw.findMany({
         where: { symbol, timestamp: { gte: startDate } },
@@ -28,8 +28,8 @@ export async function GET() {
       if (data.length === 0) return { symbol, zscore: 0 }
       const values = data.map(d => Number(d.value))
       const zscore = calculateZScore(values, 252) ?? 0
-      // VIX는 역방향
-      return { symbol, zscore: symbol === 'VIX' ? -zscore : zscore }
+      // VIX, USD_KRW는 역방향 (높을수록 Risk-Off)
+      return { symbol, zscore: (symbol === 'VIX' || symbol === 'USD_KRW') ? -zscore : zscore }
     })
 
     const riskAvg = riskZScores.reduce((sum, r) => sum + r.zscore, 0) / riskZScores.length
@@ -72,7 +72,20 @@ export async function GET() {
       return { symbol, zscore: calculateZScore(values, 252) ?? 0 }
     })
 
-    const inflationAvg = inflationZScores.reduce((sum, i) => sum + i.zscore, 0) / inflationZScores.length
+    // 인플레이션은 Max Logic 사용 (하나라도 튀면 위험)
+    // CPI 지표 중 최대값 + 원자재 평균의 가중 평균
+    const cpiSymbols = ['CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY']
+    const cpiZScores = inflationZScores.filter(z => cpiSymbols.includes(z.symbol)).map(z => z.zscore)
+    const maxCPI = cpiZScores.length > 0 ? Math.max(...cpiZScores) : 0
+
+    const commoditySymbols = ['INFLATION_EXP_5Y', 'WTI', 'GOLD']
+    const commodityZScores = inflationZScores.filter(z => commoditySymbols.includes(z.symbol))
+    const commodityAvg = commodityZScores.length > 0
+      ? commodityZScores.reduce((sum, z) => sum + z.zscore, 0) / commodityZScores.length
+      : 0
+
+    // 최종: CPI Max 60% + 원자재 평균 40%
+    const inflationAvg = (maxCPI * 0.6) + (commodityAvg * 0.4)
 
     // Final Market Regime 판단
     let regime = 'NEUTRAL'

@@ -157,13 +157,20 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
     )
   }
 
-  // 가장 많은 데이터를 가진 심볼을 찾아 labels로 사용
-  // (월별 데이터와 일별 데이터 혼재 시 일별 데이터 기준)
-  const longestSymbol = symbols.reduce((prev, curr) =>
-    data[curr].length > data[prev].length ? curr : prev
-  )
-  const labels = data[longestSymbol].map(d =>
-    d.timestamp.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+  // 모든 심볼의 timestamp를 모아서 유니크하게 정렬
+  const allTimestamps = new Set<number>()
+  symbols.forEach(symbol => {
+    data[symbol].forEach(d => {
+      // 날짜를 일(day) 단위로 정규화 (시간 제거)
+      const dateOnly = new Date(d.timestamp)
+      dateOnly.setHours(0, 0, 0, 0)
+      allTimestamps.add(dateOnly.getTime())
+    })
+  })
+
+  const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b)
+  const labels = sortedTimestamps.map(ts =>
+    new Date(ts).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
   )
 
   // 색상 팔레트
@@ -177,8 +184,8 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
   ]
 
   // 역방향 지표 처리 (그룹별로 다름)
-  // Risk Environment 그룹에서만 VIX를 역방향 처리
-  const inverseSymbols = group.id === 'risk_environment' ? ['VIX'] : []
+  // Risk Environment 그룹에서만 VIX, USD_KRW를 역방향 처리
+  const inverseSymbols = group.id === 'risk_environment' ? ['VIX', 'USD_KRW'] : []
 
   // 평균 Z-Score 계산 및 각 지표 상태
   const indicatorStates = symbols.map(symbol => {
@@ -212,15 +219,19 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
       const isInverse = inverseSymbols.includes(symbol)
       const symbolName = SYMBOL_NAMES_KO[symbol] || symbol
 
-      // 데이터 길이 맞추기: longestSymbol 기준으로 매핑
-      const referenceTimestamps = data[longestSymbol].map(d => d.timestamp.getTime())
-      const symbolData = referenceTimestamps.map(refTime => {
-        const point = data[symbol].find(d => d.timestamp.getTime() === refTime)
+      // 각 timestamp에 대해 해당 심볼의 데이터 찾기 (날짜 기준)
+      const symbolData = sortedTimestamps.map(ts => {
+        const targetDate = new Date(ts)
+        const point = data[symbol].find(d => {
+          const dataDate = new Date(d.timestamp)
+          dataDate.setHours(0, 0, 0, 0)
+          return dataDate.getTime() === targetDate.getTime()
+        })
         if (point) {
           const zscore = point.zscore || 0
           return isInverse ? -zscore : zscore
         }
-        return null  // 해당 날짜에 데이터 없으면 null
+        return null
       })
 
       return {
@@ -230,9 +241,9 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
         backgroundColor: colors[index % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
         borderWidth: 2,
         tension: 0.3,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        spanGaps: true,  // null 값 건너뛰고 선 연결
+        pointRadius: 2,  // 포인트 표시 (월별 데이터 확인용)
+        pointHoverRadius: 6,
+        spanGaps: true,
       }
     }),
   }

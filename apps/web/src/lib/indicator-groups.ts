@@ -21,12 +21,12 @@ export const INDICATOR_GROUPS: IndicatorGroup[] = [
     id: 'risk_environment',
     name: '위험자산 선호도',
     nameEn: 'Risk Environment',
-    description: '주식시장과 변동성 지표를 통해 투자자들의 위험 선호 성향을 파악',
-    symbols: ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX'],
-    detailedExplanation: '• SPX, NASDAQ, RUSSELL_2000: 주가 지수 (상승 = Risk-On)\n• VIX: 변동성 지수 (상승 = Risk-Off, 역방향 처리)',
+    description: '주식시장, 변동성, 환율 지표를 통해 투자자들의 위험 선호 성향을 파악',
+    symbols: ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX', 'USD_KRW'],
+    detailedExplanation: '• SPX, NASDAQ, RUSSELL_2000: 주가 지수 (상승 = Risk-On)\n• VIX: 변동성 지수 (상승 = Risk-Off, 역방향 처리)\n• USD_KRW: 원/달러 환율 (상승 = 자금 이탈, Risk-Off, 역방향 처리)',
     interpretation: {
-      positive: '주가 3개 지수 강세 + VIX 하락 → Risk-On 국면 (위험자산 선호)',
-      negative: '주가 3개 지수 약세 + VIX 상승 → Risk-Off 국면 (안전자산 선호)',
+      positive: '주가 3개 지수 강세 + VIX 하락 + 원/달러 하락 → Risk-On 국면 (위험자산 선호, 신흥국 자금 유입)',
+      negative: '주가 3개 지수 약세 + VIX 상승 + 원/달러 상승 → Risk-Off 국면 (안전자산 선호, 신흥국 자금 이탈)',
     },
   },
   {
@@ -35,10 +35,10 @@ export const INDICATOR_GROUPS: IndicatorGroup[] = [
     nameEn: 'Interest Rate Environment',
     description: '장단기 금리와 실질금리로 통화정책 기조를 측정',
     symbols: ['US_10Y', 'US_2Y', 'US_10Y_REAL'],
-    detailedExplanation: '• US_10Y: 10년물 국채 금리 (장기 금리 수준, 채권/주식 밸류에이션 기준)\n• US_2Y: 2년물 국채 금리 (연준 정책금리 기대치 반영)\n• US_10Y_REAL: 10년물 실질금리 (인플레 조정 후 실제 수익률, 성장주/금 밸류에이션에 영향)',
+    detailedExplanation: '• US_10Y: 10년물 국채 금리 (장기 금리 수준, 채권/주식 밸류에이션 기준)\n• US_2Y: 2년물 국채 금리 (연준 정책금리 기대치 반영)\n• US_10Y_REAL: 10년물 실질금리 (인플레 조정 후 실제 수익률, 성장주/금 밸류에이션에 영향)\n• 금리차(10Y-2Y): Steepening(확대) = 경기 회복 기대, Flattening(축소) = 경기 둔화 우려',
     interpretation: {
-      positive: '장단기 금리 + 실질금리 상승 → 긴축 국면 (연준의 인플레 억제 의지 반영)',
-      negative: '장단기 금리 + 실질금리 하락 → 완화 국면 (경기 부양 또는 침체 우려)',
+      positive: '장단기 금리 + 실질금리 상승 → 긴축 국면 (연준의 인플레 억제 의지 반영). 단, 금리차 확대 시 경기 회복 기대 반영.',
+      negative: '장단기 금리 + 실질금리 하락 → 완화 국면 (경기 부양 또는 침체 우려). 단, 금리차 축소/역전 시 경기 둔화 신호.',
     },
   },
   {
