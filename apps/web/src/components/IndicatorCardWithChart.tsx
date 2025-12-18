@@ -62,7 +62,7 @@ export default function IndicatorCardWithChart({
     value: d.value,
   }))
 
-  // 상승=파란색, 하락=빨간색
+  // 상승=빨간색, 하락=파란색
   const isPositive = change !== null && change >= 0
 
   return (
@@ -98,9 +98,9 @@ export default function IndicatorCardWithChart({
           })}
         </div>
 
-        {/* Change - 상승=파란색, 하락=빨간색 */}
+        {/* Change - 상승=빨간색, 하락=파란색 */}
         {changePercent !== null && (
-          <div className={`text-sm font-medium ${isPositive ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className={`text-sm font-medium ${isPositive ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>
             {isPositive ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}% (180일)
           </div>
         )}
