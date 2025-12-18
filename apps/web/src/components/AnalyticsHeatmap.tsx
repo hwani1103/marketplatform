@@ -18,6 +18,7 @@ interface IndicatorAnalytics {
 export default function AnalyticsHeatmap() {
   const [analytics, setAnalytics] = useState<IndicatorAnalytics[]>([])
   const [loading, setLoading] = useState(true)
+  const [useMockData, setUseMockData] = useState(false)
 
   const symbols = [
     { symbol: 'SPX', name: 'S&P 500' },
@@ -38,32 +39,128 @@ export default function AnalyticsHeatmap() {
     { symbol: 'INFLATION_EXP_5Y', name: '5Y Inflation Exp' },
   ]
 
+  // Mock 데이터 생성
+  const generateMockData = (): IndicatorAnalytics[] => {
+    return symbols.map(({ symbol, name }) => {
+      // 랜덤 Z-Score (-2.5 ~ +2.5)
+      const zscore = (Math.random() - 0.5) * 5
+      const percentile = Math.random() * 100
+
+      let interpretation = 'NORMAL'
+      let signal = 'Normal Range'
+
+      if (zscore > 2) {
+        interpretation = 'EXTREME_HIGH'
+        signal = 'Overbought - 조정 가능성'
+      } else if (zscore > 1) {
+        interpretation = 'ELEVATED'
+        signal = 'Above Average - 주의 필요'
+      } else if (zscore > -1) {
+        interpretation = 'NORMAL'
+        signal = 'Normal Range - 안정적'
+      } else if (zscore > -2) {
+        interpretation = 'DEPRESSED'
+        signal = 'Below Average - 반등 가능성'
+      } else {
+        interpretation = 'EXTREME_LOW'
+        signal = 'Oversold - 강한 반등 가능성'
+      }
+
+      return {
+        symbol,
+        name,
+        current_value: 5000 + Math.random() * 2000,
+        zscore,
+        percentile,
+        interpretation,
+        signal,
+        ma_20: 5000,
+        ma_50: 4900,
+        ma_200: 4700,
+      }
+    })
+  }
+
   useEffect(() => {
     const fetchAllAnalytics = async () => {
+      // Mock 모드면 가짜 데이터 사용
+      if (useMockData) {
+        console.log('🎭 Using mock data for development')
+        setAnalytics(generateMockData())
+        setLoading(false)
+        return
+      }
+
       const results = await Promise.all(
         symbols.map(async ({ symbol, name }) => {
           try {
             const res = await fetch(`/api/analytics/${symbol}?days=365`)
+
+            if (!res.ok) {
+              console.warn(`Analytics API error for ${symbol}: ${res.status}`)
+              return null
+            }
+
             const data = await res.json()
+
+            // API 에러 체크
+            if (data.error) {
+              console.warn(`Analytics error for ${symbol}:`, data.error)
+              return null
+            }
+
             return { ...data, symbol, name }
-          } catch {
+          } catch (error) {
+            console.error(`Failed to fetch analytics for ${symbol}:`, error)
             return null
           }
         })
       )
 
-      setAnalytics(results.filter(Boolean) as IndicatorAnalytics[])
+      const validResults = results.filter(Boolean) as IndicatorAnalytics[]
+
+      // 디버깅: 결과 확인
+      console.log(`✅ Analytics loaded: ${validResults.length}/${symbols.length} indicators`)
+      if (validResults.length > 0) {
+        console.log('Sample data:', validResults[0])
+      }
+
+      setAnalytics(validResults)
       setLoading(false)
     }
 
     fetchAllAnalytics()
-  }, [])
+  }, [useMockData])
 
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-bold mb-4">📊 Analytics Heatmap</h2>
         <div className="text-gray-500">Loading analytics...</div>
+      </div>
+    )
+  }
+
+  // 데이터가 없을 때
+  if (analytics.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+        <h2 className="text-2xl font-bold mb-4">📊 Analytics Heatmap</h2>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">⚠️</div>
+            <div>
+              <div className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                Analytics 데이터를 불러올 수 없습니다
+              </div>
+              <div className="text-sm text-yellow-700 dark:text-yellow-300">
+                • 데이터베이스 연결을 확인하세요<br />
+                • 브라우저 콘솔에서 에러 로그를 확인하세요<br />
+                • 데이터 수집기가 실행되어 있는지 확인하세요
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
