@@ -1,7 +1,28 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { createChart, ColorType, IChartApi, ISeriesApi } from 'lightweight-charts'
+import { useRef, useEffect } from 'react'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  ChartOptions,
+} from 'chart.js'
+import { Line } from 'react-chartjs-2'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler
+)
 
 interface ChartData {
   time: string
@@ -21,168 +42,99 @@ export default function MiniChart({
   height = 120,
   type = 'line'
 }: MiniChartProps) {
-  const chartContainerRef = useRef<HTMLDivElement>(null)
-  const tooltipRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<IChartApi | null>(null)
+  const chartRef = useRef<ChartJS<'line'>>(null)
 
-  useEffect(() => {
-    if (!chartContainerRef.current || data.length === 0) return
+  const labels = data.map((d) => {
+    const date = new Date(d.time)
+    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+  })
 
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#d1d5db',
+  const values = data.map((d) => d.value)
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        data: values,
+        borderColor: color,
+        backgroundColor: type === 'area' ? `${color}40` : 'transparent',
+        fill: type === 'area',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        tension: 0.1,
       },
-      width: chartContainerRef.current.clientWidth,
-      height: height,
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false },
+    ],
+  }
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: false,
       },
-      timeScale: {
-        visible: false,
-        borderVisible: false,
-      },
-      rightPriceScale: {
-        visible: false,
-        borderVisible: false,
-      },
-      leftPriceScale: {
-        visible: false,
-        borderVisible: false,
-      },
-      crosshair: {
-        vertLine: {
-          visible: true,
-          labelVisible: false,
-          color: color + '40',
-          width: 1,
-          style: 2,
-        },
-        horzLine: {
-          visible: true,
-          labelVisible: false,
-          color: color + '40',
-          width: 1,
-          style: 2,
-        },
-      },
-      watermark: {
-        visible: false,
-      },
-      handleScroll: false,
-      handleScale: false,
-    })
-
-    chartRef.current = chart
-
-    const formattedData = data.map((d) => ({
-      time: d.time,
-      value: d.value,
-    }))
-
-    let series: ISeriesApi<'Area'> | ISeriesApi<'Line'>
-
-    if (type === 'area') {
-      series = chart.addAreaSeries({
-        lineColor: color,
-        topColor: color + '40',
-        bottomColor: color + '00',
-        lineWidth: 2,
-      })
-    } else {
-      series = chart.addLineSeries({
-        color: color,
-        lineWidth: 2,
-      })
-    }
-
-    series.setData(formattedData)
-    chart.timeScale().fitContent()
-
-    // Tooltip handler
-    chart.subscribeCrosshairMove((param) => {
-      if (!tooltipRef.current || !chartContainerRef.current) return
-
-      if (
-        param.point === undefined ||
-        !param.time ||
-        param.point.x < 0 ||
-        param.point.x > chartContainerRef.current.clientWidth ||
-        param.point.y < 0 ||
-        param.point.y > height
-      ) {
-        tooltipRef.current.style.display = 'none'
-      } else {
-        const data = param.seriesData.get(series)
-        if (data) {
-          const dateStr = new Date(param.time as string).toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })
-          const value = (data as any).value || (data as any).close
-
-          tooltipRef.current.style.display = 'block'
-          tooltipRef.current.innerHTML = `
-            <div style="font-size: 12px; font-weight: 600; margin-bottom: 2px;">${dateStr}</div>
-            <div style="font-size: 14px; font-weight: 700; color: ${color};">${value.toLocaleString('ko-KR', {
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        padding: 12,
+        displayColors: false,
+        callbacks: {
+          title: (context) => {
+            const index = context[0].dataIndex
+            const date = new Date(data[index].time)
+            return date.toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })
+          },
+          label: (context) => {
+            const value = context.parsed.y
+            return value.toLocaleString('ko-KR', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            })}</div>
-          `
-
-          const y = param.point.y
-          let left = param.point.x + 15
-
-          // 오른쪽 끝에서는 왼쪽에 표시
-          if (left + 120 > chartContainerRef.current.clientWidth) {
-            left = param.point.x - 135
-          }
-
-          tooltipRef.current.style.left = left + 'px'
-          tooltipRef.current.style.top = Math.max(5, Math.min(y - 40, height - 60)) + 'px'
-        }
-      }
-    })
-
-    const handleResize = () => {
-      if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-        })
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      if (chartRef.current) {
-        chartRef.current.remove()
-      }
-    }
-  }, [data, color, height, type])
+            })
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        display: false,
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        display: false,
+        grid: {
+          display: false,
+        },
+      },
+    },
+    elements: {
+      line: {
+        borderWidth: 2,
+      },
+      point: {
+        radius: 0,
+      },
+    },
+  }
 
   return (
-    <div ref={chartContainerRef} className="w-full relative tv-lightweight-charts">
-      <div
-        ref={tooltipRef}
-        style={{
-          position: 'absolute',
-          display: 'none',
-          padding: '8px 12px',
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          color: 'white',
-          borderRadius: '6px',
-          fontSize: '12px',
-          pointerEvents: 'none',
-          zIndex: 1000,
-          whiteSpace: 'nowrap',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
-          backdropFilter: 'blur(4px)',
-        }}
-      />
+    <div style={{ width: '100%', height: `${height}px` }}>
+      <Line ref={chartRef} data={chartData} options={options} />
     </div>
   )
 }

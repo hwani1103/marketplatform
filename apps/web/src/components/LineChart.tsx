@@ -1,7 +1,28 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { createChart, ColorType, IChartApi, ISeriesApi } from 'lightweight-charts'
+import { useRef } from 'react'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  ChartOptions,
+} from 'chart.js'
+import { Line } from 'react-chartjs-2'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler
+)
 
 interface ChartData {
   time: string
@@ -15,75 +36,103 @@ interface LineChartProps {
 }
 
 export default function LineChart({ data, color = '#2563eb', height = 300 }: LineChartProps) {
-  const chartContainerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<IChartApi | null>(null)
-  const seriesRef = useRef<ISeriesApi<'Area'> | null>(null)
+  const chartRef = useRef<ChartJS<'line'>>(null)
 
-  useEffect(() => {
-    if (!chartContainerRef.current || data.length === 0) return
+  const labels = data.map((d) => {
+    const date = new Date(d.time)
+    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+  })
 
-    // Create chart
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#d1d5db',
+  const values = data.map((d) => d.value)
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        data: values,
+        borderColor: color,
+        backgroundColor: `${color}80`,
+        fill: true,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        tension: 0.1,
       },
-      width: chartContainerRef.current.clientWidth,
-      height: height,
-      grid: {
-        vertLines: { color: '#374151' },
-        horzLines: { color: '#374151' },
+    ],
+  }
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: false,
       },
-      timeScale: {
-        borderColor: '#374151',
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        padding: 12,
+        displayColors: false,
+        callbacks: {
+          title: (context) => {
+            const index = context[0].dataIndex
+            const date = new Date(data[index].time)
+            return date.toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })
+          },
+          label: (context) => {
+            const value = context.parsed.y
+            return value.toLocaleString('ko-KR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          },
+        },
       },
-      rightPriceScale: {
-        borderColor: '#374151',
+    },
+    scales: {
+      x: {
+        display: true,
+        grid: {
+          color: '#374151',
+        },
+        ticks: {
+          color: '#d1d5db',
+        },
+        border: {
+          color: '#374151',
+        },
       },
-      watermark: {
-        visible: false,
+      y: {
+        display: true,
+        grid: {
+          color: '#374151',
+        },
+        ticks: {
+          color: '#d1d5db',
+        },
+        border: {
+          color: '#374151',
+        },
       },
-    })
+    },
+  }
 
-    chartRef.current = chart
-
-    // Add area series
-    const areaSeries = chart.addAreaSeries({
-      lineColor: color,
-      topColor: color + '80',
-      bottomColor: color + '00',
-      lineWidth: 2,
-    })
-
-    seriesRef.current = areaSeries
-
-    // Set data
-    const formattedData = data.map((d) => ({
-      time: d.time,
-      value: d.value,
-    }))
-
-    areaSeries.setData(formattedData)
-    chart.timeScale().fitContent()
-
-    // Handle resize
-    const handleResize = () => {
-      if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-        })
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      if (chartRef.current) {
-        chartRef.current.remove()
-      }
-    }
-  }, [data, color, height])
-
-  return <div ref={chartContainerRef} className="w-full" />
+  return (
+    <div style={{ width: '100%', height: `${height}px` }}>
+      <Line ref={chartRef} data={chartData} options={options} />
+    </div>
+  )
 }
