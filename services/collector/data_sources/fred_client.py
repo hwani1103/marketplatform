@@ -20,14 +20,17 @@ class FREDClient:
         'US_2Y': 'DGS2',            # 2-Year Treasury Constant Maturity Rate
         'US_10Y_REAL': 'DFII10',    # 10-Year Treasury Inflation-Indexed Security
 
-        # 인플레이션 (전년비 % 변화율)
-        'CPI_YOY': 'CPIAUCSL_PC1',      # CPI Year-over-Year % Change
-        'CORE_CPI_YOY': 'CPILFESL_PC1', # Core CPI Year-over-Year % Change
-        'PCE_YOY': 'PCEPI_PC1',         # PCE Year-over-Year % Change
+        # 인플레이션 (units=pc1로 전년비 변환)
+        'CPI_YOY': 'CPIAUCSL',      # Consumer Price Index
+        'CORE_CPI_YOY': 'CPILFESL', # Core CPI (less food & energy)
+        'PCE_YOY': 'PCEPI',         # Personal Consumption Expenditures
 
         # 기타
         'INFLATION_EXP_5Y': 'T5YIE', # 5-Year Breakeven Inflation Rate
     }
+
+    # 전년비 변환이 필요한 series
+    SERIES_REQUIRE_YOY = {'CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY'}
 
     def __init__(self, api_key: str):
         """
@@ -40,7 +43,8 @@ class FREDClient:
         self,
         series_id: str,
         start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        end_date: Optional[datetime] = None,
+        symbol: Optional[str] = None
     ) -> List[Dict]:
         """
         FRED에서 시계열 데이터 가져오기
@@ -49,6 +53,7 @@ class FREDClient:
             series_id: FRED series ID (e.g., 'DGS10')
             start_date: 시작일 (기본값: 1년 전)
             end_date: 종료일 (기본값: 오늘)
+            symbol: 지표 심볼 (전년비 변환 필요 여부 확인용)
 
         Returns:
             List of {date, value} dictionaries
@@ -67,6 +72,10 @@ class FREDClient:
             'sort_order': 'desc',  # 최신 데이터부터
             'limit': 1000
         }
+
+        # 전년비 변환이 필요한 series는 units=pc1 추가
+        if symbol and symbol in self.SERIES_REQUIRE_YOY:
+            params['units'] = 'pc1'
 
         try:
             response = requests.get(self.BASE_URL, params=params, timeout=30)
@@ -105,7 +114,7 @@ class FREDClient:
 
         for symbol, series_id in self.SERIES_MAP.items():
             logger.info(f"Fetching {symbol} ({series_id})...")
-            data = self.fetch_series(series_id, start_date)
+            data = self.fetch_series(series_id, start_date, symbol=symbol)
             if data:
                 results[symbol] = data
 
