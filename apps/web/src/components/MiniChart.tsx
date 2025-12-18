@@ -165,7 +165,13 @@ export default function MiniChart({
   }, [data, color, height, type])
 
   return (
-    <div ref={chartContainerRef} className="w-full relative">
+    <div ref={chartContainerRef} className="w-full relative" style={{ position: 'relative' }}>
+      <style jsx>{`
+        div :global(.tv-lightweight-charts) :global([class*='watermark']) {
+          display: none !important;
+          visibility: hidden !important;
+        }
+      `}</style>
       <div
         ref={tooltipRef}
         style={{

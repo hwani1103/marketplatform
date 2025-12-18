@@ -27,6 +27,7 @@ class YahooFinanceClient:
 
         # 통화
         'DXY': 'DX-Y.NYB',     # US Dollar Index
+        'USD_KRW': 'KRW=X',    # USD/KRW Exchange Rate
     }
 
     def fetch_ticker(

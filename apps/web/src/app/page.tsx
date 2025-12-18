@@ -26,6 +26,7 @@ const SYMBOL_INFO: Record<string, { name: string; color: string; category: strin
 
   // 통화
   DXY: { name: 'US Dollar Index', color: '#10b981', category: '통화' },
+  USD_KRW: { name: '원/달러 환율', color: '#3b82f6', category: '통화' },
 
   // 금리
   US_10Y: { name: '미국 10년물 금리', color: '#6366f1', category: '금리' },
@@ -161,7 +162,7 @@ export default function Home() {
                   모든 지표 차트로 확인 가능!
                 </h2>
                 <p className="text-gray-700 dark:text-gray-300 mb-3 text-lg">
-                  15개 거시경제 지표를 실시간으로 추적하고 있습니다.
+                  16개 거시경제 지표를 실시간으로 추적하고 있습니다.
                 </p>
                 <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                   <li>✓ 180일간 추세를 미니 차트로 표시</li>
