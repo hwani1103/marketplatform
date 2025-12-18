@@ -22,54 +22,54 @@ export default function AnalyticsHeatmap() {
   const [useMockData, setUseMockData] = useState(false)
 
   const symbols = [
-    { symbol: 'SPX', name: 'S&P 500' },
-    { symbol: 'NASDAQ', name: 'NASDAQ' },
-    { symbol: 'RUSSELL_2000', name: 'Russell 2000' },
-    { symbol: 'VIX', name: 'VIX' },
-    { symbol: 'GOLD', name: 'Gold' },
-    { symbol: 'WTI', name: 'WTI Oil' },
-    { symbol: 'DXY', name: 'Dollar Index' },
-    { symbol: 'USD_KRW', name: 'USD/KRW' },
-    { symbol: 'US_10Y', name: 'US 10Y' },
-    { symbol: 'US_2Y', name: 'US 2Y' },
-    { symbol: 'SPREAD_10Y_2Y', name: '10Y-2Y Spread' },
-    { symbol: 'US_10Y_REAL', name: 'US 10Y Real' },
-    { symbol: 'CPI_YOY', name: 'CPI' },
-    { symbol: 'CORE_CPI_YOY', name: 'Core CPI' },
-    { symbol: 'PCE_YOY', name: 'PCE' },
-    { symbol: 'INFLATION_EXP_5Y', name: '5Y Inflation Exp' },
+    { symbol: 'SPX', name: 'S&P 500', nameKo: 'S&P 500' },
+    { symbol: 'NASDAQ', name: 'NASDAQ', nameKo: '나스닥' },
+    { symbol: 'RUSSELL_2000', name: 'Russell 2000', nameKo: '러셀 2000' },
+    { symbol: 'VIX', name: 'VIX', nameKo: 'VIX (변동성)' },
+    { symbol: 'GOLD', name: 'Gold', nameKo: '금 (Gold)' },
+    { symbol: 'WTI', name: 'WTI Oil', nameKo: 'WTI 원유' },
+    { symbol: 'DXY', name: 'Dollar Index', nameKo: '달러 인덱스' },
+    { symbol: 'USD_KRW', name: 'USD/KRW', nameKo: '원/달러 환율' },
+    { symbol: 'US_10Y', name: 'US 10Y', nameKo: '미국 10년물' },
+    { symbol: 'US_2Y', name: 'US 2Y', nameKo: '미국 2년물' },
+    { symbol: 'SPREAD_10Y_2Y', name: '10Y-2Y Spread', nameKo: '장단기 금리차' },
+    { symbol: 'US_10Y_REAL', name: 'US 10Y Real', nameKo: '10년물 실질금리' },
+    { symbol: 'CPI_YOY', name: 'CPI', nameKo: 'CPI (소비자물가)' },
+    { symbol: 'CORE_CPI_YOY', name: 'Core CPI', nameKo: '근원 CPI' },
+    { symbol: 'PCE_YOY', name: 'PCE', nameKo: 'PCE (개인소비지출)' },
+    { symbol: 'INFLATION_EXP_5Y', name: '5Y Inflation Exp', nameKo: '5년 인플레 기대' },
   ]
 
   // Mock 데이터 생성
   const generateMockData = (): IndicatorAnalytics[] => {
-    return symbols.map(({ symbol, name }) => {
+    return symbols.map(({ symbol, name, nameKo }) => {
       // 랜덤 Z-Score (-2.5 ~ +2.5)
       const zscore = (Math.random() - 0.5) * 5
       const percentile = Math.random() * 100
 
       let interpretation = 'NORMAL'
-      let signal = 'Normal Range'
+      let signal = '정상 범위 - 안정적'
 
       if (zscore > 2) {
         interpretation = 'EXTREME_HIGH'
-        signal = 'Overbought - 조정 가능성'
+        signal = '과매수 - 조정 가능성'
       } else if (zscore > 1) {
         interpretation = 'ELEVATED'
-        signal = 'Above Average - 주의 필요'
+        signal = '평균 이상 - 주의 필요'
       } else if (zscore > -1) {
         interpretation = 'NORMAL'
-        signal = 'Normal Range - 안정적'
+        signal = '정상 범위 - 안정적'
       } else if (zscore > -2) {
         interpretation = 'DEPRESSED'
-        signal = 'Below Average - 반등 가능성'
+        signal = '평균 이하 - 반등 가능성'
       } else {
         interpretation = 'EXTREME_LOW'
-        signal = 'Oversold - 강한 반등 가능성'
+        signal = '과매도 - 강한 반등 가능성'
       }
 
       return {
         symbol,
-        name,
+        name: nameKo,
         current_value: 5000 + Math.random() * 2000,
         zscore,
         percentile,
@@ -93,7 +93,7 @@ export default function AnalyticsHeatmap() {
       }
 
       const results = await Promise.all(
-        symbols.map(async ({ symbol, name }) => {
+        symbols.map(async ({ symbol, name, nameKo }) => {
           try {
             const res = await fetch(`/api/analytics/${symbol}?days=365`)
 
@@ -110,7 +110,7 @@ export default function AnalyticsHeatmap() {
               return null
             }
 
-            return { ...data, symbol, name }
+            return { ...data, symbol, name: nameKo }
           } catch (error) {
             console.error(`Failed to fetch analytics for ${symbol}:`, error)
             return null
@@ -197,9 +197,21 @@ export default function AnalyticsHeatmap() {
         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           📊 Layer 1: Analytics Heatmap
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-gray-400 mb-3">
           모든 지표의 역사적 상대적 위치 (Z-Score)
         </p>
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="text-sm text-blue-900 dark:text-blue-100">
+            <strong>💡 Z-Score란?</strong> 현재 값이 과거 평균에서 얼마나 떨어져 있는지를 표준편차 단위로 표시한 값입니다.
+            <ul className="mt-2 ml-4 space-y-1 text-xs">
+              <li>• <strong>0</strong> = 역사적 평균 수준</li>
+              <li>• <strong>+1σ ~ +2σ</strong> = 평균보다 높음 (상위 16~2%)</li>
+              <li>• <strong>+2σ 이상</strong> = 매우 높음, 과매수 (상위 2%)</li>
+              <li>• <strong>-1σ ~ -2σ</strong> = 평균보다 낮음 (하위 16~2%)</li>
+              <li>• <strong>-2σ 이하</strong> = 매우 낮음, 과매도 (하위 2%)</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -265,26 +277,26 @@ export default function AnalyticsHeatmap() {
 
       {/* 범례 */}
       <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex gap-6 text-xs text-gray-600 dark:text-gray-400">
+        <div className="flex gap-6 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-red-500"></div>
-            <span>🔴 Overbought (&gt;+2σ)</span>
+            <span>🔴 과매수 - 조정 가능성 (&gt;+2σ)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-orange-400"></div>
-            <span>🟡 Elevated (+1σ~+2σ)</span>
+            <span>🟡 평균 이상 - 주의 필요 (+1σ~+2σ)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-green-500"></div>
-            <span>🟢 Normal (-1σ~+1σ)</span>
+            <span>🟢 정상 범위 - 안정적 (-1σ~+1σ)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-blue-400"></div>
-            <span>🔵 Depressed (-2σ~-1σ)</span>
+            <span>🔵 평균 이하 - 반등 가능성 (-2σ~-1σ)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-blue-600"></div>
-            <span>🔵 Oversold (&lt;-2σ)</span>
+            <span>🔵 과매도 - 강한 반등 가능성 (&lt;-2σ)</span>
           </div>
         </div>
       </div>

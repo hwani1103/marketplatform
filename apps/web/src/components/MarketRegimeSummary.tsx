@@ -127,7 +127,14 @@ export default function MarketRegimeSummary() {
         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           현재 시장 국면 요약
         </h2>
-        <p className="text-gray-600">각 환경별 종합 분석</p>
+        <p className="text-gray-600 mb-3">각 환경별 종합 분석 (평균 Z-Score 기준)</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-xs text-blue-900">
+            <strong>💡 평균 Z-Score란?</strong> 각 그룹 내 지표들의 Z-Score 평균값입니다.
+            예: <strong>+1.00σ</strong> = 역사적으로 평균보다 1 표준편차 높음 (상위 16% 수준),
+            <strong>-0.86σ</strong> = 평균보다 약간 낮음 (하위 약 20% 수준)
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

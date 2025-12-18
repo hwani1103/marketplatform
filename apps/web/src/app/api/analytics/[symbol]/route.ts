@@ -57,24 +57,24 @@ export async function GET(
     // Z-Score 해석 추가
     const zscore = analytics.zscore
     let interpretation = 'NORMAL'
-    let signal = 'Neutral'
+    let signal = '정상 범위'
 
     if (zscore !== undefined) {
       if (zscore > 2) {
         interpretation = 'EXTREME_HIGH'
-        signal = 'Overbought - 조정 가능성'
+        signal = '과매수 - 조정 가능성'
       } else if (zscore > 1) {
         interpretation = 'ELEVATED'
-        signal = 'Above Average - 주의 필요'
+        signal = '평균 이상 - 주의 필요'
       } else if (zscore > -1) {
         interpretation = 'NORMAL'
-        signal = 'Normal Range - 안정적'
+        signal = '정상 범위 - 안정적'
       } else if (zscore > -2) {
         interpretation = 'DEPRESSED'
-        signal = 'Below Average - 반등 가능성'
+        signal = '평균 이하 - 반등 가능성'
       } else {
         interpretation = 'EXTREME_LOW'
-        signal = 'Oversold - 강한 반등 가능성'
+        signal = '과매도 - 강한 반등 가능성'
       }
     }
 
