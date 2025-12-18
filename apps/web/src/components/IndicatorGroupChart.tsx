@@ -104,9 +104,10 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
             return
           }
 
-          // 최근 252일 데이터의 mean과 std 계산 (sample variance 사용)
+          // 최근 252일 데이터의 mean과 std 계산 (lib/analytics.ts와 동일)
           const mean = windowValues.reduce((a, b) => a + b, 0) / windowValues.length
-          const variance = windowValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (windowValues.length - 1)
+          const squaredDiffs = windowValues.map(val => Math.pow(val - mean, 2))
+          const variance = squaredDiffs.reduce((a, b) => a + b, 0) / (windowValues.length - 1)
           const std = Math.sqrt(variance)
 
           // 각 포인트의 Z-Score를 계산 (동일한 mean/std 기준 사용)

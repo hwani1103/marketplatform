@@ -26,7 +26,8 @@ export default function DebugPanel() {
         // 1. Raw indicator data
         const indicatorsRes = await fetch('/api/indicators')
         if (!indicatorsRes.ok) throw new Error('Failed to fetch indicators')
-        const indicators = await indicatorsRes.json()
+        const indicatorsData = await indicatorsRes.json()
+        const indicators = indicatorsData.indicators || []
 
         // 2. Market regime (includes Z-Scores)
         const regimeRes = await fetch('/api/market-regime')

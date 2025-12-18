@@ -10,15 +10,20 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '90')
 
-    // 최근 N일치 데이터 가져오기
+    // N일 이전부터의 모든 데이터 가져오기 (다른 API들과 동일한 방식)
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days)
+
     const data = await prisma.indicatorRaw.findMany({
-      where: { symbol },
-      orderBy: { timestamp: 'desc' },
-      take: days,
+      where: {
+        symbol,
+        timestamp: { gte: startDate }
+      },
+      orderBy: { timestamp: 'asc' },
     })
 
-    // 시간순 정렬 (차트용)
-    const sortedData = data.reverse()
+    // 이미 시간순 정렬되어 있음
+    const sortedData = data
 
     return NextResponse.json({
       symbol,

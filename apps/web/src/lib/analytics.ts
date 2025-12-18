@@ -34,9 +34,12 @@ function calculateMovingAverage(values: number[], window: number): number | null
 }
 
 /**
- * Z-Score 계산
+ * Z-Score 계산 (exported for reuse across the app)
+ * @param values - 시계열 데이터 배열
+ * @param window - rolling window 크기 (기본값: 252일)
+ * @returns Z-Score 값 또는 null
  */
-function calculateZScore(values: number[], window: number = 252): number | null {
+export function calculateZScore(values: number[], window: number = 252): number | null {
   if (values.length < 2) return null
 
   const windowValues = values.slice(-Math.min(window, values.length))
