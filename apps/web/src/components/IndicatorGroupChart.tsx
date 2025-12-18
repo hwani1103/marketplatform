@@ -89,11 +89,11 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
           }))
         })
 
-        // Z-Score 계산 (252일 rolling window - /lib/analytics.ts와 동일)
+        // Z-Score 계산 (252일 rolling window 기준 - /lib/analytics.ts와 동일)
         Object.keys(groupData).forEach((symbol) => {
           const values = groupData[symbol].map(d => d.value)
 
-          // 252일 window 사용
+          // 252일 window 사용 (최근 252일치 데이터로 mean/std 계산)
           const window = 252
           const windowValues = values.slice(-Math.min(window, values.length))
 
@@ -104,17 +104,14 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
             return
           }
 
+          // 최근 252일 데이터의 mean과 std 계산 (sample variance 사용)
           const mean = windowValues.reduce((a, b) => a + b, 0) / windowValues.length
           const variance = windowValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (windowValues.length - 1)
           const std = Math.sqrt(variance)
 
-          // 최신 값의 Z-Score만 계산 (차트는 이 값만 사용)
-          const currentValue = values[values.length - 1]
-          const zscore = std > 0 ? (currentValue - mean) / std : 0
-
-          // 모든 포인트에 동일한 Z-Score 적용 (최신 값 기준)
+          // 각 포인트의 Z-Score를 계산 (동일한 mean/std 기준 사용)
           groupData[symbol].forEach((point) => {
-            point.zscore = zscore
+            point.zscore = std > 0 ? (point.value - mean) / std : 0
           })
         })
 
