@@ -18,7 +18,8 @@ interface IndicatorAnalytics {
 export default function AnalyticsHeatmap() {
   const [analytics, setAnalytics] = useState<IndicatorAnalytics[]>([])
   const [loading, setLoading] = useState(true)
-  const [useMockData, setUseMockData] = useState(false)
+  // TODO: DB 연결되면 false로 변경
+  const [useMockData, setUseMockData] = useState(true)
 
   const symbols = [
     { symbol: 'SPX', name: 'S&P 500' },
