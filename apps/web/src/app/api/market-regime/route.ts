@@ -49,7 +49,7 @@ export async function GET() {
       const data = await prisma.indicatorRaw.findMany({
         where: { symbol, timestamp: { gte: startDate } },
         orderBy: { timestamp: 'asc' },
-        select: { value: true },
+        select: { value: true, timestamp: true },
       })
       return { symbol, data }
     })
@@ -69,7 +69,7 @@ export async function GET() {
       const data = await prisma.indicatorRaw.findMany({
         where: { symbol, timestamp: { gte: startDate } },
         orderBy: { timestamp: 'asc' },
-        select: { value: true },
+        select: { value: true, timestamp: true },
       })
       return { symbol, data }
     })
