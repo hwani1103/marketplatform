@@ -22,6 +22,7 @@ export default function MiniChart({
   type = 'line'
 }: MiniChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function MiniChart({
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: 'transparent',
+        textColor: '#d1d5db',
       },
       width: chartContainerRef.current.clientWidth,
       height: height,
@@ -52,10 +53,18 @@ export default function MiniChart({
       },
       crosshair: {
         vertLine: {
-          visible: false,
+          visible: true,
+          labelVisible: false,
+          color: color + '40',
+          width: 1,
+          style: 2,
         },
         horzLine: {
-          visible: false,
+          visible: true,
+          labelVisible: false,
+          color: color + '40',
+          width: 1,
+          style: 2,
         },
       },
       handleScroll: false,
@@ -69,23 +78,70 @@ export default function MiniChart({
       value: d.value,
     }))
 
+    let series: ISeriesApi<'Area'> | ISeriesApi<'Line'>
+
     if (type === 'area') {
-      const areaSeries = chart.addAreaSeries({
+      series = chart.addAreaSeries({
         lineColor: color,
         topColor: color + '40',
         bottomColor: color + '00',
         lineWidth: 2,
       })
-      areaSeries.setData(formattedData)
     } else {
-      const lineSeries = chart.addLineSeries({
+      series = chart.addLineSeries({
         color: color,
         lineWidth: 2,
       })
-      lineSeries.setData(formattedData)
     }
 
+    series.setData(formattedData)
     chart.timeScale().fitContent()
+
+    // Tooltip handler
+    chart.subscribeCrosshairMove((param) => {
+      if (!tooltipRef.current || !chartContainerRef.current) return
+
+      if (
+        param.point === undefined ||
+        !param.time ||
+        param.point.x < 0 ||
+        param.point.x > chartContainerRef.current.clientWidth ||
+        param.point.y < 0 ||
+        param.point.y > height
+      ) {
+        tooltipRef.current.style.display = 'none'
+      } else {
+        const data = param.seriesData.get(series)
+        if (data) {
+          const dateStr = new Date(param.time as string).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+          const value = (data as any).value || (data as any).close
+
+          tooltipRef.current.style.display = 'block'
+          tooltipRef.current.innerHTML = `
+            <div style="font-size: 12px; font-weight: 600; margin-bottom: 2px;">${dateStr}</div>
+            <div style="font-size: 14px; font-weight: 700; color: ${color};">${value.toLocaleString('ko-KR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}</div>
+          `
+
+          const y = param.point.y
+          let left = param.point.x + 15
+
+          // 오른쪽 끝에서는 왼쪽에 표시
+          if (left + 120 > chartContainerRef.current.clientWidth) {
+            left = param.point.x - 135
+          }
+
+          tooltipRef.current.style.left = left + 'px'
+          tooltipRef.current.style.top = Math.max(5, Math.min(y - 40, height - 60)) + 'px'
+        }
+      }
+    })
 
     const handleResize = () => {
       if (chartContainerRef.current && chartRef.current) {
@@ -105,5 +161,25 @@ export default function MiniChart({
     }
   }, [data, color, height, type])
 
-  return <div ref={chartContainerRef} className="w-full" />
+  return (
+    <div ref={chartContainerRef} className="w-full relative">
+      <div
+        ref={tooltipRef}
+        style={{
+          position: 'absolute',
+          display: 'none',
+          padding: '8px 12px',
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          color: 'white',
+          borderRadius: '6px',
+          fontSize: '12px',
+          pointerEvents: 'none',
+          zIndex: 1000,
+          whiteSpace: 'nowrap',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(4px)',
+        }}
+      />
+    </div>
+  )
 }

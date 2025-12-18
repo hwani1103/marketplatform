@@ -24,7 +24,7 @@ export default function IndicatorCardWithChart({
   latestValue,
   latestDate,
   source,
-  days = 30,
+  days = 180,
   color = '#3b82f6',
 }: IndicatorCardWithChartProps) {
   const [data, setData] = useState<IndicatorData[]>([])
@@ -86,7 +86,7 @@ export default function IndicatorCardWithChart({
         {/* Change */}
         {changePercent !== null && (
           <div className={`text-sm font-medium ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {isPositive ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}% ({days}일)
+            {isPositive ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}% (180일)
           </div>
         )}
       </div>

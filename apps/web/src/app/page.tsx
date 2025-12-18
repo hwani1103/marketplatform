@@ -141,7 +141,7 @@ export default function Home() {
                       latestValue={indicator.value}
                       latestDate={indicator.timestamp}
                       source={indicator.source}
-                      days={30}
+                      days={180}
                       color={info.color}
                     />
                   )
@@ -164,7 +164,8 @@ export default function Home() {
                   15개 거시경제 지표를 실시간으로 추적하고 있습니다.
                 </p>
                 <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>✓ 30일간 추세를 미니 차트로 표시</li>
+                  <li>✓ 180일간 추세를 미니 차트로 표시</li>
+                  <li>✓ 차트에 마우스 올리면 날짜와 값 표시</li>
                   <li>✓ 변화율(%) 자동 계산</li>
                   <li>✓ FRED API + Yahoo Finance 데이터 통합</li>
                   <li>✓ 카테고리별 구분으로 쉬운 탐색</li>
