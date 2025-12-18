@@ -140,18 +140,29 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
     'rgb(236, 72, 153)',   // pink
   ]
 
+  // 역방향 지표 처리 (그룹별로 다름)
+  // Risk Environment 그룹에서만 VIX를 역방향 처리
+  const inverseSymbols = group.id === 'risk_environment' ? ['VIX'] : []
+
   const chartData = {
     labels,
-    datasets: symbols.map((symbol, index) => ({
-      label: symbol,
-      data: data[symbol].map(d => d.zscore || 0),
-      borderColor: colors[index % colors.length],
-      backgroundColor: colors[index % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
-      borderWidth: 2,
-      tension: 0.3,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-    })),
+    datasets: symbols.map((symbol, index) => {
+      const isInverse = inverseSymbols.includes(symbol)
+      return {
+        label: isInverse ? `${symbol} (역)` : symbol,
+        data: data[symbol].map(d => {
+          const zscore = d.zscore || 0
+          // 역방향 지표는 부호 반전
+          return isInverse ? -zscore : zscore
+        }),
+        borderColor: colors[index % colors.length],
+        backgroundColor: colors[index % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+      }
+    }),
   }
 
   const options: ChartOptions<'line'> = {
@@ -212,15 +223,23 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
         <Line data={chartData} options={options} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
-        <div>
-          <p className="text-xs font-semibold text-green-700 mb-1">상승 시 의미</p>
-          <p className="text-sm text-gray-700">{group.interpretation.positive}</p>
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs font-semibold text-green-700 mb-1">평균 Z-Score 양수일 때</p>
+            <p className="text-sm text-gray-700">{group.interpretation.positive}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-red-700 mb-1">평균 Z-Score 음수일 때</p>
+            <p className="text-sm text-gray-700">{group.interpretation.negative}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-xs font-semibold text-red-700 mb-1">하락 시 의미</p>
-          <p className="text-sm text-gray-700">{group.interpretation.negative}</p>
-        </div>
+        {inverseSymbols.length > 0 && (
+          <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+            ⚠️ <strong>{inverseSymbols.join(', ')}</strong>는 역방향 지표로 처리됩니다
+            (높을수록 Risk-Off이므로 Z-Score 부호 반전)
+          </div>
+        )}
       </div>
     </div>
   )

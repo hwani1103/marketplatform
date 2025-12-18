@@ -20,11 +20,11 @@ export const INDICATOR_GROUPS: IndicatorGroup[] = [
     id: 'risk_environment',
     name: '위험자산 선호도',
     nameEn: 'Risk Environment',
-    description: '주식시장과 변동성 지표를 통해 투자자들의 위험 선호 성향을 파악',
+    description: '주식시장과 변동성 지표를 통해 투자자들의 위험 선호 성향을 파악 (VIX는 역방향 처리)',
     symbols: ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX'],
     interpretation: {
-      positive: 'Risk-On: 투자자들이 위험자산 선호, 주가 상승, VIX 하락',
-      negative: 'Risk-Off: 투자자들이 안전자산 선호, 주가 하락, VIX 상승',
+      positive: 'Risk-On: 주가 3개 지수 강세 + VIX 하락 → 투자자들이 위험자산 선호',
+      negative: 'Risk-Off: 주가 3개 지수 약세 + VIX 상승 → 투자자들이 안전자산 선호',
     },
   },
   {

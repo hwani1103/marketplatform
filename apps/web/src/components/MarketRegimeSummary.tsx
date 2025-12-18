@@ -49,9 +49,18 @@ export default function MarketRegimeSummary() {
 
           if (analytics.length === 0) continue
 
-          // 평균 Z-Score 계산
+          // 평균 Z-Score 계산 (역방향 지표 처리)
+          // VIX는 역방향: 높을수록 Risk-Off이므로 Z-Score를 반전
+          // 그룹별로 역방향 지표가 다름
+          const inverseSymbols = group.id === 'risk_environment' ? ['VIX'] : []
+
           const avgZScore =
-            analytics.reduce((sum, a) => sum + (a.zscore || 0), 0) / analytics.length
+            analytics.reduce((sum, a) => {
+              const zscore = a.zscore || 0
+              // 역방향 지표는 부호 반전
+              const adjustedZScore = inverseSymbols.includes(a.symbol) ? -zscore : zscore
+              return sum + adjustedZScore
+            }, 0) / analytics.length
 
           // 상태 판단
           let state: GroupSummary['state']
