@@ -22,22 +22,22 @@ export default function AnalyticsHeatmap() {
   const [useMockData, setUseMockData] = useState(false)
 
   const symbols = [
-    { symbol: 'SPX', name: 'S&P 500', nameKo: 'S&P 500' },
-    { symbol: 'NASDAQ', name: 'NASDAQ', nameKo: '나스닥' },
-    { symbol: 'RUSSELL_2000', name: 'Russell 2000', nameKo: '러셀 2000' },
-    { symbol: 'VIX', name: 'VIX', nameKo: 'VIX (변동성)' },
-    { symbol: 'GOLD', name: 'Gold', nameKo: '금 (Gold)' },
-    { symbol: 'WTI', name: 'WTI Oil', nameKo: 'WTI 원유' },
-    { symbol: 'DXY', name: 'Dollar Index', nameKo: '달러 인덱스' },
-    { symbol: 'USD_KRW', name: 'USD/KRW', nameKo: '원/달러 환율' },
-    { symbol: 'US_10Y', name: 'US 10Y', nameKo: '미국 10년물' },
-    { symbol: 'US_2Y', name: 'US 2Y', nameKo: '미국 2년물' },
-    { symbol: 'SPREAD_10Y_2Y', name: '10Y-2Y Spread', nameKo: '장단기 금리차' },
-    { symbol: 'US_10Y_REAL', name: 'US 10Y Real', nameKo: '10년물 실질금리' },
-    { symbol: 'CPI_YOY', name: 'CPI', nameKo: 'CPI (소비자물가)' },
-    { symbol: 'CORE_CPI_YOY', name: 'Core CPI', nameKo: '근원 CPI' },
-    { symbol: 'PCE_YOY', name: 'PCE', nameKo: 'PCE (개인소비지출)' },
-    { symbol: 'INFLATION_EXP_5Y', name: '5Y Inflation Exp', nameKo: '5년 인플레 기대' },
+    { symbol: 'SPX', name: 'S&P 500', nameKo: 'S&P 500', description: '미국 대형주 500개 기업의 시가총액 가중 지수. 미국 주식 시장 전체의 건강도를 나타내는 가장 중요한 지표입니다.' },
+    { symbol: 'NASDAQ', name: 'NASDAQ', nameKo: '나스닥', description: '나스닥 거래소의 모든 상장 주식을 포함한 지수. 기술주 중심으로 성장주의 흐름을 파악할 수 있습니다.' },
+    { symbol: 'RUSSELL_2000', name: 'Russell 2000', nameKo: '러셀 2000', description: '미국 소형주 2000개 기업의 지수. 경기 민감도가 높아 경기 사이클 판단에 유용합니다.' },
+    { symbol: 'VIX', name: 'VIX', nameKo: 'VIX (변동성)', description: 'S&P 500 옵션 가격에서 산출된 변동성 지수. 시장의 공포와 불확실성을 측정하는 "공포 지수"입니다.' },
+    { symbol: 'GOLD', name: 'Gold', nameKo: '금 (Gold)', description: '금 현물 가격. 인플레이션 헤지, 안전자산으로 경기 불확실성 시 수요가 증가합니다.' },
+    { symbol: 'WTI', name: 'WTI Oil', nameKo: 'WTI 원유', description: '서부텍사스유(WTI) 원유 가격. 글로벌 경기와 인플레이션을 반영하는 에너지 가격 지표입니다.' },
+    { symbol: 'DXY', name: 'Dollar Index', nameKo: '달러 인덱스', description: '주요 6개 통화 대비 미국 달러 가치를 측정하는 지수. 글로벌 자금 흐름과 위험 선호도를 반영합니다.' },
+    { symbol: 'USD_KRW', name: 'USD/KRW', nameKo: '원/달러 환율', description: '달러당 원화 환율. 한국 투자자에게 매우 중요한 지표로, 환노출과 자산 배분 전략에 핵심적입니다.' },
+    { symbol: 'US_10Y', name: 'US 10Y', nameKo: '미국 10년물', description: '미국 10년 만기 국채 수익률. 장기 금리 수준으로 주식/부동산 밸류에이션의 기준이 됩니다.' },
+    { symbol: 'US_2Y', name: 'US 2Y', nameKo: '미국 2년물', description: '미국 2년 만기 국채 수익률. 연준 기준금리 변화 기대를 가장 잘 반영합니다.' },
+    { symbol: 'SPREAD_10Y_2Y', name: '10Y-2Y Spread', nameKo: '장단기 금리차', description: '10년물과 2년물 수익률 차이. 마이너스면 경기 침체 신호로 해석됩니다.' },
+    { symbol: 'US_10Y_REAL', name: 'US 10Y Real', nameKo: '10년물 실질금리', description: '10년물 명목금리에서 기대 인플레이션을 뺀 실질 수익률. 금/성장주 밸류에이션에 직접 영향을 줍니다.' },
+    { symbol: 'CPI_YOY', name: 'CPI', nameKo: 'CPI (소비자물가)', description: '소비자물가지수 전년 대비 상승률. 연준 통화정책의 가장 중요한 목표 지표입니다.' },
+    { symbol: 'CORE_CPI_YOY', name: 'Core CPI', nameKo: '근원 CPI', description: '식품/에너지를 제외한 근원 소비자물가 상승률. 변동성이 적어 구조적 인플레 추세를 파악하는 데 유용합니다.' },
+    { symbol: 'PCE_YOY', name: 'PCE', nameKo: 'PCE (개인소비지출)', description: '개인소비지출 물가지수. 연준이 공식 목표로 사용하는 인플레이션 지표입니다.' },
+    { symbol: 'INFLATION_EXP_5Y', name: '5Y Inflation Exp', nameKo: '5년 인플레 기대', description: '5년 기대 인플레이션율. 시장이 향후 5년간 예상하는 평균 인플레이션 수준입니다.' },
   ]
 
   // Mock 데이터 생성
@@ -194,23 +194,33 @@ export default function AnalyticsHeatmap() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-          📊 Layer 1: Analytics Heatmap
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          모든 지표의 역사적 상대적 위치 (Z-Score 기반)
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          💡 지표 이름에 마우스를 올리면 상세 설명을 확인할 수 있습니다
         </p>
       </div>
 
       <div className="space-y-3">
         {analytics
           .sort((a, b) => (b.zscore || 0) - (a.zscore || 0))
-          .map((item) => (
-            <div key={item.symbol} className="flex items-center gap-4">
-              {/* 지표 이름 */}
-              <div className="w-32 text-sm font-medium text-gray-900 dark:text-white">
-                {item.name}
-              </div>
+          .map((item) => {
+            const symbolInfo = symbols.find(s => s.symbol === item.symbol)
+            return (
+              <div key={item.symbol} className="flex items-center gap-4">
+                {/* 지표 이름 */}
+                <div className="w-32 text-sm font-medium text-gray-900 dark:text-white group relative cursor-help">
+                  <span className="border-b border-dotted border-gray-400 dark:border-gray-500">
+                    {item.name}
+                  </span>
+                  {/* Tooltip */}
+                  {symbolInfo?.description && (
+                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-50 w-64 p-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg shadow-xl">
+                      <div className="font-semibold mb-1">{symbolInfo.nameKo}</div>
+                      <div className="text-gray-200 dark:text-gray-700">{symbolInfo.description}</div>
+                      {/* Arrow */}
+                      <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+                    </div>
+                  )}
+                </div>
 
               {/* Z-Score 바 */}
               <div className="flex-1 relative h-8 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
@@ -260,7 +270,8 @@ export default function AnalyticsHeatmap() {
                 {item.signal}
               </div>
             </div>
-          ))}
+          )
+        })}
       </div>
 
       {/* 범례 */}

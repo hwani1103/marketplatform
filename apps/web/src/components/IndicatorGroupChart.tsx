@@ -40,6 +40,25 @@ interface Props {
   days?: number
 }
 
+// Symbol 한글 이름 매핑
+const SYMBOL_NAMES_KO: Record<string, string> = {
+  SPX: 'S&P 500',
+  NASDAQ: '나스닥',
+  RUSSELL_2000: '러셀 2000',
+  VIX: 'VIX',
+  US_10Y: '미국 10년물',
+  US_2Y: '미국 2년물',
+  US_10Y_REAL: '미국 10년 실질금리',
+  CPI_YOY: 'CPI',
+  CORE_CPI_YOY: '근원 CPI',
+  PCE_YOY: 'PCE',
+  INFLATION_EXP: '인플레이션 기대',
+  WTI: 'WTI 원유',
+  GOLD: '금',
+  DXY: '달러인덱스',
+  USD_KRW: '원/달러',
+}
+
 export default function IndicatorGroupChart({ group, days = 90 }: Props) {
   const [data, setData] = useState<GroupChartData>({})
   const [loading, setLoading] = useState(true)
@@ -161,7 +180,7 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
 
   // 동적 해석 생성
   const generateDynamicInterpretation = () => {
-    const summary = indicatorStates.map(s => `${s.symbol} ${s.direction}`).join(', ')
+    const summary = indicatorStates.map(s => `${SYMBOL_NAMES_KO[s.symbol] || s.symbol} ${s.direction}`).join(', ')
 
     if (avgZScore > 0) {
       return `${summary} → ${group.interpretation.positive}`
@@ -174,8 +193,9 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
     labels,
     datasets: symbols.map((symbol, index) => {
       const isInverse = inverseSymbols.includes(symbol)
+      const symbolName = SYMBOL_NAMES_KO[symbol] || symbol
       return {
-        label: isInverse ? `${symbol} (역)` : symbol,
+        label: isInverse ? `${symbolName} (역)` : symbolName,
         data: data[symbol].map(d => {
           const zscore = d.zscore || 0
           // 역방향 지표는 부호 반전
