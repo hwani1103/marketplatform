@@ -7,7 +7,7 @@ interface MarketRegimeData {
   regimeKo: string
   description: string
   color: string
-  confidence: number
+  calculatedAt: string
   layers: {
     risk: {
       avgZScore: number
@@ -80,27 +80,20 @@ export default function FinalMarketRegime() {
     }
   }
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-green-600'
-    if (confidence >= 60) return 'text-blue-600'
-    return 'text-yellow-600'
-  }
-
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl border-2 border-gray-200 overflow-hidden">
       {/* 메인 Regime 표시 */}
       <div className={`bg-gradient-to-r ${getColorClasses(regime.color)} p-8 text-white`}>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="text-sm font-medium opacity-90 mb-2">🎯 현재 시장 국면</div>
-            <h2 className="text-4xl font-bold mb-3">{regime.regimeKo}</h2>
-            <p className="text-lg opacity-95 leading-relaxed">{regime.description}</p>
-          </div>
-          <div className="ml-6 text-right">
-            <div className="text-sm opacity-90 mb-1">신뢰도</div>
-            <div className="text-5xl font-bold">{regime.confidence}%</div>
-          </div>
+        <div className="text-sm font-medium opacity-90 mb-2">
+          🎯 현재 시장 국면 (업데이트: {new Date(regime.calculatedAt).toLocaleString('ko-KR', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })})
         </div>
+        <h2 className="text-4xl font-bold mb-3">{regime.regimeKo}</h2>
+        <p className="text-lg opacity-95 leading-relaxed">{regime.description}</p>
       </div>
 
       {/* Layer별 상세 분석 */}

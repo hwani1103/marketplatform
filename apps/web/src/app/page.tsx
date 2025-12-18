@@ -5,7 +5,6 @@ import IndicatorCardWithChart from '@/components/IndicatorCardWithChart'
 import AnalyticsHeatmap from '@/components/AnalyticsHeatmap'
 import FinalMarketRegime from '@/components/FinalMarketRegime'
 import IndicatorGroupChart from '@/components/IndicatorGroupChart'
-import MarketRegimeSummary from '@/components/MarketRegimeSummary'
 import { INDICATOR_GROUPS } from '@/lib/indicator-groups'
 
 interface Indicator {
@@ -179,37 +178,37 @@ export default function Home() {
           <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Market Regime Platform
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
-            거시 시장 상태를 한눈에 확인하세요
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            거시경제 지표 기반 시장 국면 분석
           </p>
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              마지막 업데이트: {new Date().toLocaleString('ko-KR')}
-            </span>
-          </div>
         </div>
 
-        {/* Final Market Regime - 가장 중요한 정보를 맨 위에 */}
+        {/* 1. 최종 시장 국면 판단 */}
         <div className="mb-16">
           <FinalMarketRegime />
         </div>
 
-        {/* Analytics Heatmap */}
-        <AnalyticsHeatmap />
-
-        {/* 시장 국면 요약 */}
-        <div className="my-16">
-          <MarketRegimeSummary />
+        {/* 2. 전체 지표 현황 */}
+        <div className="mb-16">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+              📊 전체 지표 현황
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              16개 주요 거시경제 지표의 Z-Score 기반 분석
+            </p>
+          </div>
+          <AnalyticsHeatmap />
         </div>
 
-        {/* 혼합 차트 - 연관 지표 그룹 */}
-        <div className="my-16">
+        {/* 3. 환경별 심층 분석 */}
+        <div className="mb-16">
           <div className="mb-8">
-            <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              시장 환경 분석
+            <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+              📈 환경별 심층 분석
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              연관성 있는 지표들을 함께 보여주어 시장 국면을 파악합니다
+            <p className="text-gray-600 dark:text-gray-400">
+              연관 지표 그룹별 시계열 추이 및 동적 해석
             </p>
           </div>
 
@@ -220,14 +219,24 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Categories */}
-        {categoryOrder.map((category) => {
-          const categoryIndicators = groupedIndicators[category]
-          if (!categoryIndicators || categoryIndicators.length === 0) return null
+        {/* 4. 개별 지표 상세 차트 */}
+        <div className="mb-16">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+              📉 개별 지표 상세
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              카테고리별 개별 지표의 상세 시계열 차트
+            </p>
+          </div>
 
-          return (
-            <div key={category} className="mb-16">
-              <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+          {categoryOrder.map((category) => {
+            const categoryIndicators = groupedIndicators[category]
+            if (!categoryIndicators || categoryIndicators.length === 0) return null
+
+            return (
+              <div key={category} className="mb-12">
+                <h3 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200 flex items-center gap-3">
                 <span className="text-4xl">
                   {category === '주식 지수' && '📈'}
                   {category === '변동성' && '⚡'}
@@ -263,9 +272,10 @@ export default function Home() {
                   )
                 })}
               </div>
-            </div>
-          )
-        })}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </main>
   )

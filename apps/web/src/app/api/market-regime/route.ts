@@ -88,26 +88,21 @@ export async function GET() {
     let regimeKo = '중립'
     let description = ''
     let color = 'gray'
-    let confidence = 50
 
     if (riskAvg > 1 && liquidityAvg < 0 && inflationAvg < 0) {
       regime = 'GOLDILOCKS'
       regimeKo = '골디락스 (이상적 환경)'
       description = '주가 강세 + 금리 안정 + 물가 안정 → 가장 이상적인 투자 환경입니다. 위험자산을 적극 매수하기 좋은 시기입니다.'
       color = 'green'
-      confidence = 90
     } else if (riskAvg > 0.5) {
       regime = 'RISK_ON'
       regimeKo = 'Risk-On (위험자산 선호)'
       if (inflationAvg > 1) {
         description = '주가 강세이지만 인플레이션 압력이 높습니다. 긴축 우려가 있어 주의가 필요합니다.'
-        confidence = 65
       } else if (liquidityAvg > 1) {
         description = '주가 강세이지만 금리가 상승 중입니다. 긴축 국면에서 변동성이 클 수 있습니다.'
-        confidence = 70
       } else {
         description = '주가 강세 + 경기 회복 기대. 위험자산 투자에 유리한 환경입니다.'
-        confidence = 80
       }
       color = 'blue'
     } else if (riskAvg < -0.5) {
@@ -115,10 +110,8 @@ export async function GET() {
       regimeKo = 'Risk-Off (안전자산 선호)'
       if (liquidityAvg < -0.5) {
         description = '주가 약세 + 금리 하락 → 경기 침체 우려가 큽니다. 현금 및 채권 보유를 고려하세요.'
-        confidence = 85
       } else {
         description = '주가 약세 환경입니다. 안전자산(채권, 금) 비중을 늘리는 것이 좋습니다.'
-        confidence = 75
       }
       color = 'red'
     } else {
@@ -126,15 +119,20 @@ export async function GET() {
       regimeKo = '혼조 (방향성 불명확)'
       description = '지표들이 엇갈리고 있어 시장 방향성이 불명확합니다. 관망하거나 분산 투자가 적절합니다.'
       color = 'yellow'
-      confidence = 60
     }
+
+    // 가장 최근 데이터의 timestamp 찾기
+    const latestTimestamp = Math.max(
+      ...riskData.flatMap(d => d.data.map(p => p.timestamp.getTime())),
+      ...liquidityData.flatMap(d => d.data.map(p => p.timestamp.getTime())),
+      ...inflationData.flatMap(d => d.data.map(p => p.timestamp.getTime()))
+    )
 
     return NextResponse.json({
       regime,
       regimeKo,
       description,
       color,
-      confidence,
       layers: {
         risk: {
           avgZScore: riskAvg,
@@ -155,7 +153,7 @@ export async function GET() {
           indicators: inflationZScores,
         },
       },
-      calculatedAt: new Date().toISOString(),
+      calculatedAt: new Date(latestTimestamp).toISOString(),
     })
   } catch (error) {
     console.error('Error calculating market regime:', error)
