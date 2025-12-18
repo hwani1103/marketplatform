@@ -19,3 +19,11 @@ body {
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
+
+/* Hide TradingView watermark */
+.tv-lightweight-charts div[class*='watermark'],
+.tv-lightweight-charts table tr:last-child {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
