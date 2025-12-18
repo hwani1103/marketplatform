@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import IndicatorChart from '@/components/IndicatorChart'
+import IndicatorCardWithChart from '@/components/IndicatorCardWithChart'
 
 interface Indicator {
   id: string
@@ -11,22 +11,33 @@ interface Indicator {
   source: string
 }
 
-const SYMBOL_NAMES: Record<string, string> = {
-  SPX: 'S&P 500',
-  NASDAQ: 'NASDAQ',
-  RUSSELL_2000: 'Russell 2000',
-  VIX: 'VIX (변동성)',
-  GOLD: 'Gold',
-  WTI: 'WTI 원유',
-  DXY: 'US Dollar Index',
-  US_10Y: '미국 10년물 금리',
-  US_2Y: '미국 2년물 금리',
-  SPREAD_10Y_2Y: '10Y-2Y Spread',
-  US_10Y_REAL: '미국 10년물 실질금리',
-  CPI_YOY: 'CPI (전년비)',
-  CORE_CPI_YOY: 'Core CPI (전년비)',
-  PCE_YOY: 'PCE (전년비)',
-  INFLATION_EXP_5Y: '5년 인플레이션 기대',
+const SYMBOL_INFO: Record<string, { name: string; color: string; category: string }> = {
+  // 주식 지수
+  SPX: { name: 'S&P 500', color: '#3b82f6', category: '주식 지수' },
+  NASDAQ: { name: 'NASDAQ', color: '#8b5cf6', category: '주식 지수' },
+  RUSSELL_2000: { name: 'Russell 2000', color: '#06b6d4', category: '주식 지수' },
+
+  // 변동성 & 리스크
+  VIX: { name: 'VIX (변동성)', color: '#ef4444', category: '변동성' },
+
+  // 원자재
+  GOLD: { name: 'Gold', color: '#f59e0b', category: '원자재' },
+  WTI: { name: 'WTI 원유', color: '#000000', category: '원자재' },
+
+  // 통화
+  DXY: { name: 'US Dollar Index', color: '#10b981', category: '통화' },
+
+  // 금리
+  US_10Y: { name: '미국 10년물 금리', color: '#6366f1', category: '금리' },
+  US_2Y: { name: '미국 2년물 금리', color: '#8b5cf6', category: '금리' },
+  SPREAD_10Y_2Y: { name: '10Y-2Y Spread', color: '#ec4899', category: '금리' },
+  US_10Y_REAL: { name: '미국 10년물 실질금리', color: '#14b8a6', category: '금리' },
+
+  // 인플레이션
+  CPI_YOY: { name: 'CPI (전년비)', color: '#f97316', category: '인플레이션' },
+  CORE_CPI_YOY: { name: 'Core CPI (전년비)', color: '#dc2626', category: '인플레이션' },
+  PCE_YOY: { name: 'PCE (전년비)', color: '#ea580c', category: '인플레이션' },
+  INFLATION_EXP_5Y: { name: '5년 인플레이션 기대', color: '#f59e0b', category: '인플레이션' },
 }
 
 export default function Home() {
@@ -63,106 +74,107 @@ export default function Home() {
     )
   }
 
+  // 카테고리별로 그룹화
+  const groupedIndicators = indicators.reduce((acc, indicator) => {
+    const info = SYMBOL_INFO[indicator.symbol]
+    const category = info?.category || '기타'
+    if (!acc[category]) acc[category] = []
+    acc[category].push(indicator)
+    return acc
+  }, {} as Record<string, Indicator[]>)
+
+  const categoryOrder = ['주식 지수', '변동성', '금리', '원자재', '통화', '인플레이션']
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Market Regime Platform
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
-            거시 시장 상태 요약 플랫폼
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+            거시 시장 상태를 한눈에 확인하세요
           </p>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-              총 {indicators.length}개 지표 수집 완료
+          <div className="flex items-center gap-4 flex-wrap">
+            <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg">
+              ✓ {indicators.length}개 지표 실시간 수집
             </span>
-            <span className="text-sm text-gray-500">
-              마지막 업데이트: {new Date().toLocaleDateString('ko-KR')}
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              마지막 업데이트: {new Date().toLocaleString('ko-KR')}
             </span>
           </div>
         </div>
 
-        {/* Featured Charts */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-            📊 주요 지표 차트
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <IndicatorChart symbol="SPX" name="S&P 500" days={90} />
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <IndicatorChart symbol="VIX" name="VIX (변동성 지수)" days={90} />
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <IndicatorChart symbol="US_10Y" name="미국 10년물 금리" days={90} />
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <IndicatorChart symbol="GOLD" name="Gold" days={90} />
-            </div>
-          </div>
-        </div>
+        {/* Categories */}
+        {categoryOrder.map((category) => {
+          const categoryIndicators = groupedIndicators[category]
+          if (!categoryIndicators || categoryIndicators.length === 0) return null
 
-        {/* All Indicators Grid */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-            📈 모든 지표
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {indicators.map((indicator) => (
-              <div
-                key={indicator.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-200 hover:scale-105"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {SYMBOL_NAMES[indicator.symbol] || indicator.symbol}
-                  </h3>
-                  <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full">
-                    {indicator.source}
-                  </span>
-                </div>
+          return (
+            <div key={category} className="mb-16">
+              <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+                <span className="text-4xl">
+                  {category === '주식 지수' && '📈'}
+                  {category === '변동성' && '⚡'}
+                  {category === '금리' && '💰'}
+                  {category === '원자재' && '🏆'}
+                  {category === '통화' && '💵'}
+                  {category === '인플레이션' && '📊'}
+                </span>
+                {category}
+              </h2>
 
-                <div className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {indicator.value.toLocaleString('ko-KR', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {categoryIndicators.map((indicator) => {
+                  const info = SYMBOL_INFO[indicator.symbol] || {
+                    name: indicator.symbol,
+                    color: '#3b82f6',
+                    category: '기타',
+                  }
 
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {new Date(indicator.timestamp).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </div>
-                  <div className="text-xs text-gray-400 dark:text-gray-500 font-mono">
-                    {indicator.symbol}
-                  </div>
-                </div>
+                  return (
+                    <IndicatorCardWithChart
+                      key={indicator.id}
+                      symbol={indicator.symbol}
+                      name={info.name}
+                      latestValue={indicator.value}
+                      latestDate={indicator.timestamp}
+                      source={indicator.source}
+                      days={30}
+                      color={info.color}
+                    />
+                  )
+                })}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )
+        })}
 
         {/* Info Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-8 border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-4">
-            <div className="text-4xl">✅</div>
-            <div>
-              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
-                데이터 수집 완료!
-              </h2>
-              <p className="text-gray-700 dark:text-gray-300 mb-3">
-                FRED API와 Yahoo Finance에서 거시경제 지표를 성공적으로 수집했습니다.
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                📌 다음 단계: Layer 1 계산 엔진 (MA, Z-score) 구현
-              </p>
+        <div className="mt-16 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl p-[2px] shadow-2xl">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-8">
+            <div className="flex items-start gap-4">
+              <div className="text-5xl">🎉</div>
+              <div>
+                <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  모든 지표 차트로 확인 가능!
+                </h2>
+                <p className="text-gray-700 dark:text-gray-300 mb-3 text-lg">
+                  15개 거시경제 지표를 실시간으로 추적하고 있습니다.
+                </p>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>✓ 30일간 추세를 미니 차트로 표시</li>
+                  <li>✓ 변화율(%) 자동 계산</li>
+                  <li>✓ FRED API + Yahoo Finance 데이터 통합</li>
+                  <li>✓ 카테고리별 구분으로 쉬운 탐색</li>
+                </ul>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    📌 다음 단계: Layer 1 계산 엔진 (MA, Z-score) 구현
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
