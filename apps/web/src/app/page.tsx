@@ -6,6 +6,7 @@ import AnalyticsHeatmap from '@/components/AnalyticsHeatmap'
 import FinalMarketRegime from '@/components/FinalMarketRegime'
 import IndicatorGroupChart from '@/components/IndicatorGroupChart'
 import StickyNav from '@/components/StickyNav'
+import DebugPanel from '@/components/DebugPanel'
 import { INDICATOR_GROUPS } from '@/lib/indicator-groups'
 
 interface Indicator {
@@ -276,6 +277,11 @@ export default function Home() {
               </div>
             )
           })}
+        </section>
+
+        {/* Debug Panel - 테스트/검증용 */}
+        <section className="mt-16">
+          <DebugPanel />
         </section>
       </div>
     </main>
