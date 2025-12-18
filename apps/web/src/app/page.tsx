@@ -246,7 +246,7 @@ export default function Home() {
                   {category === '인플레이션' && '📊'}
                 </span>
                 {category}
-              </h2>
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {categoryIndicators.map((indicator) => {
