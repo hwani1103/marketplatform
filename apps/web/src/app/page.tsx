@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import IndicatorCardWithChart from '@/components/IndicatorCardWithChart'
+import AnalyticsHeatmap from '@/components/AnalyticsHeatmap'
 
 interface Indicator {
   id: string
@@ -186,6 +187,9 @@ export default function Home() {
             </span>
           </div>
         </div>
+
+        {/* Analytics Heatmap */}
+        <AnalyticsHeatmap />
 
         {/* Categories */}
         {categoryOrder.map((category) => {
