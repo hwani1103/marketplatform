@@ -22,8 +22,20 @@ body {
 
 /* Hide TradingView watermark */
 .tv-lightweight-charts div[class*='watermark'],
-.tv-lightweight-charts table tr:last-child {
+.tv-lightweight-charts table tr:last-child,
+div[style*='pointer-events: none'][style*='position: absolute'],
+div[style*='font-family'][style*='14px'],
+.tv-lightweight-charts > div > div:last-child {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
+}
+
+/* Additional watermark hiding */
+.tv-lightweight-charts table tbody tr:last-child td {
+  display: none !important;
+}
+
+.tv-lightweight-charts canvas + div {
+  display: none !important;
 }

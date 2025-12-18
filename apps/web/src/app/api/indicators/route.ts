@@ -12,6 +12,7 @@ export async function GET() {
       'GOLD',
       'WTI',
       'DXY',
+      'USD_KRW',
       'US_10Y',
       'US_2Y',
       'SPREAD_10Y_2Y',
