@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import IndicatorCardWithChart from '@/components/IndicatorCardWithChart'
 import AnalyticsHeatmap from '@/components/AnalyticsHeatmap'
+import IndicatorGroupChart from '@/components/IndicatorGroupChart'
+import MarketRegimeSummary from '@/components/MarketRegimeSummary'
+import { INDICATOR_GROUPS } from '@/lib/indicator-groups'
 
 interface Indicator {
   id: string
@@ -190,6 +193,29 @@ export default function Home() {
 
         {/* Analytics Heatmap */}
         <AnalyticsHeatmap />
+
+        {/* 시장 국면 요약 */}
+        <div className="my-16">
+          <MarketRegimeSummary />
+        </div>
+
+        {/* 혼합 차트 - 연관 지표 그룹 */}
+        <div className="my-16">
+          <div className="mb-8">
+            <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              시장 환경 분석
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              연관성 있는 지표들을 함께 보여주어 시장 국면을 파악합니다
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8">
+            {INDICATOR_GROUPS.map((group) => (
+              <IndicatorGroupChart key={group.id} group={group} days={90} />
+            ))}
+          </div>
+        </div>
 
         {/* Categories */}
         {categoryOrder.map((category) => {
