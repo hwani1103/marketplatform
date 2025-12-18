@@ -52,7 +52,7 @@ const SYMBOL_NAMES_KO: Record<string, string> = {
   CPI_YOY: 'CPI',
   CORE_CPI_YOY: '근원 CPI',
   PCE_YOY: 'PCE',
-  INFLATION_EXP: '인플레이션 기대',
+  INFLATION_EXP_5Y: '5년 인플레 기대',
   WTI: 'WTI 원유',
   GOLD: '금',
   DXY: '달러인덱스',

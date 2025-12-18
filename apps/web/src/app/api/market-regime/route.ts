@@ -72,7 +72,7 @@ export async function GET() {
     const liquidityAvg = liquidityZScores.reduce((sum, l) => sum + l.zscore, 0) / liquidityZScores.length
 
     // Layer 4: Inflation Environment
-    const inflationSymbols = ['CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY', 'WTI', 'GOLD']
+    const inflationSymbols = ['CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY', 'INFLATION_EXP_5Y', 'WTI', 'GOLD']
     const inflationDataPromises = inflationSymbols.map(async (symbol) => {
       const data = await prisma.indicatorRaw.findMany({
         where: { symbol, timestamp: { gte: startDate } },

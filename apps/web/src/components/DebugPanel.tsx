@@ -16,16 +16,21 @@ interface DebugData {
 export default function DebugPanel() {
   const [data, setData] = useState<DebugData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchDebugData() {
       try {
+        setError(null)
+
         // 1. Raw indicator data
         const indicatorsRes = await fetch('/api/indicators')
+        if (!indicatorsRes.ok) throw new Error('Failed to fetch indicators')
         const indicators = await indicatorsRes.json()
 
         // 2. Market regime (includes Z-Scores)
         const regimeRes = await fetch('/api/market-regime')
+        if (!regimeRes.ok) throw new Error('Failed to fetch market regime')
         const marketRegime = await regimeRes.json()
 
         // 3. Analytics for each indicator
@@ -63,6 +68,7 @@ export default function DebugPanel() {
         setData({ rawData, marketRegime, indicators: analytics })
       } catch (error) {
         console.error('Failed to fetch debug data:', error)
+        setError(error instanceof Error ? error.message : 'Unknown error occurred')
       } finally {
         setLoading(false)
       }
@@ -74,12 +80,35 @@ export default function DebugPanel() {
   if (loading) {
     return (
       <div className="bg-gray-900 text-green-400 font-mono text-xs p-8 rounded-lg">
-        Loading debug data...
+        <p className="text-yellow-300">⏳ Loading debug data...</p>
       </div>
     )
   }
 
-  if (!data) return null
+  if (error) {
+    return (
+      <div className="bg-gray-900 text-red-400 font-mono text-xs p-8 rounded-lg">
+        <h2 className="text-xl font-bold text-red-500 mb-4">
+          ❌ DEBUG PANEL - 로딩 실패
+        </h2>
+        <p className="text-red-300">Error: {error}</p>
+        <p className="text-gray-400 mt-4">API 응답을 확인하세요:</p>
+        <ul className="list-disc ml-6 mt-2 text-gray-400">
+          <li>/api/indicators</li>
+          <li>/api/market-regime</li>
+          <li>/api/analytics/[symbol]</li>
+        </ul>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="bg-gray-900 text-yellow-400 font-mono text-xs p-8 rounded-lg">
+        <p>⚠️ No data available</p>
+      </div>
+    )
+  }
 
   const { rawData, marketRegime, indicators } = data
 
@@ -247,7 +276,7 @@ export default function DebugPanel() {
                 CPI_YOY: 'CPI',
                 CORE_CPI_YOY: '근원 CPI',
                 PCE_YOY: 'PCE',
-                INFLATION_EXP: '인플레 기대',
+                INFLATION_EXP_5Y: '5년 인플레 기대',
                 WTI: 'WTI 원유',
                 GOLD: '금',
               }[ind.symbol] || ind.symbol
@@ -276,7 +305,7 @@ export default function DebugPanel() {
                     CPI_YOY: 'CPI',
                     CORE_CPI_YOY: '근원 CPI',
                     PCE_YOY: 'PCE',
-                    INFLATION_EXP: '인플레 기대',
+                    INFLATION_EXP_5Y: '5년 인플레 기대',
                     WTI: 'WTI 원유',
                     GOLD: '금',
                   }[ind.symbol] || ind.symbol
