@@ -65,6 +65,28 @@ export default function IndicatorCardWithChart({
   // 상승=빨간색, 하락=파란색
   const isPositive = change !== null && change >= 0
 
+  // 단위 결정
+  const getUnit = () => {
+    // 금리 지표
+    if (['US_10Y', 'US_2Y', 'SPREAD_10Y_2Y', 'US_10Y_REAL'].includes(symbol)) {
+      return '%'
+    }
+    // 인플레이션 지표
+    if (['CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY', 'INFLATION_EXP_5Y'].includes(symbol)) {
+      return '%'
+    }
+    // 원자재
+    if (['GOLD', 'WTI'].includes(symbol)) {
+      return '$'
+    }
+    // 환율
+    if (symbol === 'USD_KRW') {
+      return '₩'
+    }
+    // 나머지는 단위 없음 (포인트)
+    return ''
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-2xl transition-shadow duration-300">
       {/* Header */}
@@ -96,6 +118,7 @@ export default function IndicatorCardWithChart({
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
+          {getUnit() && <span className="text-xl text-gray-500 dark:text-gray-400 ml-1">{getUnit()}</span>}
         </div>
 
         {/* Change - 상승=빨간색, 하락=파란색 */}
