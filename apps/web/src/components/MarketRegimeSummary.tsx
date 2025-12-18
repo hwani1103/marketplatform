@@ -145,18 +145,34 @@ export default function MarketRegimeSummary() {
             </div>
 
             <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full ${summary.color}`}
-                    style={{
-                      width: `${Math.min(Math.abs(summary.avgZScore) * 25, 100)}%`,
-                      marginLeft: summary.avgZScore < 0 ? 'auto' : '0',
-                    }}
-                  ></div>
-                </div>
+              <div className="relative">
+                {/* 배경 그라데이션 */}
+                <div className="w-full h-3 rounded-full bg-gradient-to-r from-blue-500 via-green-500 to-red-500 opacity-20"></div>
+
+                {/* 중앙선 (0) */}
+                <div className="absolute top-0 left-1/2 w-0.5 h-3 bg-gray-400"></div>
+
+                {/* 값 마커 */}
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md"
+                  style={{
+                    left: `${Math.max(0, Math.min(100, ((summary.avgZScore + 3) / 6) * 100))}%`,
+                    transform: 'translate(-50%, -50%)',
+                    backgroundColor: summary.color.replace('bg-', '').split('-').reduce((acc, part) => {
+                      const colors: Record<string, string> = {
+                        'red': '#ef4444',
+                        'orange': '#f97316',
+                        'green': '#22c55e',
+                        'blue': '#3b82f6',
+                        'purple': '#a855f7',
+                      }
+                      return colors[part] || acc
+                    }, '#6b7280')
+                  }}
+                ></div>
               </div>
-              <div className="flex justify-between text-xs text-gray-500">
+
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>-3σ</span>
                 <span>0</span>
                 <span>+3σ</span>
