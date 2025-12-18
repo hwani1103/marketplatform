@@ -144,6 +144,15 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
   // Risk Environment 그룹에서만 VIX를 역방향 처리
   const inverseSymbols = group.id === 'risk_environment' ? ['VIX'] : []
 
+  // 평균 Z-Score 계산
+  const avgZScore = symbols.reduce((sum, symbol) => {
+    const latestData = data[symbol]?.[data[symbol].length - 1]
+    if (!latestData?.zscore) return sum
+    const zscore = latestData.zscore
+    const adjustedZScore = inverseSymbols.includes(symbol) ? -zscore : zscore
+    return sum + adjustedZScore
+  }, 0) / symbols.length
+
   const chartData = {
     labels,
     datasets: symbols.map((symbol, index) => {
@@ -212,32 +221,77 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
     },
   }
 
+  // Z-Score에 따른 색상 결정
+  const getZScoreColor = (zscore: number) => {
+    if (zscore > 2) return 'bg-red-500'
+    if (zscore > 1) return 'bg-orange-500'
+    if (zscore > -1) return 'bg-green-500'
+    if (zscore > -2) return 'bg-blue-500'
+    return 'bg-purple-500'
+  }
+
+  const getZScoreTextColor = (zscore: number) => {
+    if (zscore > 2) return 'text-red-700'
+    if (zscore > 1) return 'text-orange-700'
+    if (zscore > -1) return 'text-green-700'
+    if (zscore > -2) return 'text-blue-700'
+    return 'text-purple-700'
+  }
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <div className="mb-4">
-        <h3 className="text-xl font-bold text-gray-900">{group.name}</h3>
-        <p className="text-sm text-gray-600 mt-1">{group.description}</p>
+      {/* 헤더 */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-gray-900">{group.name}</h3>
+          <p className="text-sm text-gray-600 mt-1">{group.description}</p>
+        </div>
+        <div className="ml-4">
+          <div className="text-right">
+            <div className="text-xs text-gray-500 mb-1">평균 Z-Score</div>
+            <div className={`inline-flex items-center px-4 py-2 rounded-lg text-white font-bold text-lg ${getZScoreColor(avgZScore)}`}>
+              {avgZScore >= 0 ? '+' : ''}{avgZScore.toFixed(2)}σ
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* 차트 */}
       <div className="h-80 mb-4">
         <Line data={chartData} options={options} />
       </div>
 
-      <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs font-semibold text-green-700 mb-1">평균 Z-Score 양수일 때</p>
-            <p className="text-sm text-gray-700">{group.interpretation.positive}</p>
+      {/* 해석 박스 */}
+      <div className="mt-4 space-y-3">
+        {/* 각 지표 설명 */}
+        {group.detailedExplanation && (
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs font-semibold text-gray-700 mb-2">📊 각 지표의 의미</div>
+            <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+              {group.detailedExplanation}
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-red-700 mb-1">평균 Z-Score 음수일 때</p>
-            <p className="text-sm text-gray-700">{group.interpretation.negative}</p>
+        )}
+
+        {/* 종합 해석 */}
+        <div className={`p-4 rounded-lg border-2 ${
+          avgZScore > 0
+            ? 'bg-green-50 border-green-200'
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className={`text-xs font-semibold mb-2 ${getZScoreTextColor(avgZScore)}`}>
+            💡 현재 상황 ({avgZScore >= 0 ? '평균 Z-Score 양수' : '평균 Z-Score 음수'})
+          </div>
+          <div className="text-sm text-gray-800 font-medium">
+            {avgZScore > 0 ? group.interpretation.positive : group.interpretation.negative}
           </div>
         </div>
+
+        {/* 역방향 지표 경고 */}
         {inverseSymbols.length > 0 && (
-          <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+          <div className="text-xs text-gray-600 bg-blue-50 p-3 rounded border border-blue-200">
             ⚠️ <strong>{inverseSymbols.join(', ')}</strong>는 역방향 지표로 처리됩니다
-            (높을수록 Risk-Off이므로 Z-Score 부호 반전)
+            (높을수록 Risk-Off이므로 Z-Score 부호를 반전하여 계산)
           </div>
         )}
       </div>

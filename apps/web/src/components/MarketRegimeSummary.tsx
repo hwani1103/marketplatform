@@ -234,6 +234,14 @@ export default function MarketRegimeSummary() {
                   : '보통 수준'}
               </p>
             )}
+            {summaries.find((s) => s.group.id === 'currency') && (
+              <p>
+                <span className="font-semibold">달러 강도:</span>{' '}
+                {summaries.find((s) => s.group.id === 'currency')?.avgZScore! > 0
+                  ? '달러 강세 (안전자산 선호, 신흥국 부담)'
+                  : '달러 약세 (위험자산 선호, 신흥국 유리)'}
+              </p>
+            )}
           </div>
         </div>
       )}

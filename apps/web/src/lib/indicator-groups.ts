@@ -9,9 +9,10 @@ export interface IndicatorGroup {
   nameEn: string
   description: string
   symbols: string[]
+  detailedExplanation?: string // 각 지표의 역할을 상세히 설명
   interpretation: {
-    positive: string // 값이 상승할 때 의미
-    negative: string // 값이 하락할 때 의미
+    positive: string // 평균 Z-Score 양수일 때
+    negative: string // 평균 Z-Score 음수일 때
   }
 }
 
@@ -20,44 +21,48 @@ export const INDICATOR_GROUPS: IndicatorGroup[] = [
     id: 'risk_environment',
     name: '위험자산 선호도',
     nameEn: 'Risk Environment',
-    description: '주식시장과 변동성 지표를 통해 투자자들의 위험 선호 성향을 파악 (VIX는 역방향 처리)',
+    description: '주식시장과 변동성 지표를 통해 투자자들의 위험 선호 성향을 파악',
     symbols: ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX'],
+    detailedExplanation: '• SPX, NASDAQ, RUSSELL_2000: 주가 지수 (상승 = Risk-On)\n• VIX: 변동성 지수 (상승 = Risk-Off, 역방향 처리)',
     interpretation: {
-      positive: 'Risk-On: 주가 3개 지수 강세 + VIX 하락 → 투자자들이 위험자산 선호',
-      negative: 'Risk-Off: 주가 3개 지수 약세 + VIX 상승 → 투자자들이 안전자산 선호',
+      positive: '주가 3개 지수 강세 + VIX 하락 → Risk-On 국면 (위험자산 선호)',
+      negative: '주가 3개 지수 약세 + VIX 상승 → Risk-Off 국면 (안전자산 선호)',
     },
   },
   {
     id: 'liquidity_rates',
-    name: '유동성 및 금리',
-    nameEn: 'Liquidity & Rates',
-    description: '국채 금리와 스프레드를 통해 시장 유동성과 경기 전망을 파악',
-    symbols: ['US_10Y', 'US_2Y', 'SPREAD_10Y_2Y', 'US_10Y_REAL'],
+    name: '금리 환경',
+    nameEn: 'Interest Rate Environment',
+    description: '장단기 금리와 실질금리로 통화정책 기조를 측정',
+    symbols: ['US_10Y', 'US_2Y', 'US_10Y_REAL'],
+    detailedExplanation: '• US_10Y: 10년물 국채 금리 (장기 금리 수준, 채권/주식 밸류에이션 기준)\n• US_2Y: 2년물 국채 금리 (연준 정책금리 기대치 반영)\n• US_10Y_REAL: 10년물 실질금리 (인플레 조정 후 실제 수익률, 성장주/금 밸류에이션에 영향)',
     interpretation: {
-      positive: '금리 상승: 경기 회복 기대 또는 긴축 우려, 장단기 스프레드 확대시 경기 회복 신호',
-      negative: '금리 하락: 경기 둔화 우려 또는 완화 기대, 장단기 스프레드 축소시 경기 둔화 신호',
+      positive: '장단기 금리 + 실질금리 상승 → 긴축 국면 (연준의 인플레 억제 의지 반영)',
+      negative: '장단기 금리 + 실질금리 하락 → 완화 국면 (경기 부양 또는 침체 우려)',
     },
   },
   {
     id: 'inflation_commodity',
-    name: '인플레이션 및 원자재',
-    nameEn: 'Inflation & Commodities',
-    description: '물가 지표와 원자재 가격으로 인플레이션 압력 측정',
+    name: '인플레이션 압력',
+    nameEn: 'Inflation Pressure',
+    description: '실제 물가, 기대 인플레, 원자재 가격을 종합하여 인플레이션 압력 측정',
     symbols: ['CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY', 'INFLATION_EXP_5Y', 'WTI', 'GOLD'],
+    detailedExplanation: '• CPI, Core CPI, PCE: 실제 소비자 물가 상승률 (연준이 직접 관찰하는 인플레 지표)\n• INFLATION_EXP_5Y: 시장이 예상하는 향후 5년간 평균 인플레율 (기대 인플레가 높으면 실제 인플레로 이어질 위험)\n• WTI: 원유 가격 (에너지는 모든 생산비용에 영향, 인플레의 선행지표)\n• GOLD: 인플레 헤지 자산 (인플레 압력이 높을 때 수요 증가)',
     interpretation: {
-      positive: '인플레 압력 증가: 원자재 가격 상승, 소비자물가 상승, 긴축 가능성',
-      negative: '인플레 압력 감소: 원자재 가격 하락, 소비자물가 안정, 완화 가능성',
+      positive: '물가 상승 + 기대 인플레 상승 + 원자재 강세 → 인플레 압력 ↑ (연준 긴축 불가피)',
+      negative: '물가 안정 + 기대 인플레 하락 + 원자재 약세 → 인플레 압력 ↓ (연준 완화 여력)',
     },
   },
   {
-    id: 'currency_safe_haven',
-    name: '통화 및 안전자산',
-    nameEn: 'Currency & Safe Haven',
-    description: '달러, 원화, 금 등 안전자산 흐름 파악',
-    symbols: ['DXY', 'USD_KRW', 'GOLD'],
+    id: 'currency',
+    name: '달러 강도',
+    nameEn: 'Dollar Strength',
+    description: '글로벌 달러 지수와 원화 환율로 달러 강도 측정',
+    symbols: ['DXY', 'USD_KRW'],
+    detailedExplanation: '• DXY: 달러 인덱스 (주요 6개 통화 대비 달러 가치, 상승 = 글로벌 달러 수요 증가)\n• USD_KRW: 원/달러 환율 (원화는 대표적인 신흥국 통화, 상승 = 신흥국 자금 이탈)',
     interpretation: {
-      positive: '달러 강세: 안전자산 선호, 신흥국 통화 약세, 금 가격 상승 가능',
-      negative: '달러 약세: 위험자산 선호, 신흥국 통화 강세, 금 가격 하락 가능',
+      positive: 'DXY ↑ + 원/달러 ↑ → 달러 강세 국면 (미국 금리 우위, 안전자산 선호, 또는 신흥국 리스크)',
+      negative: 'DXY ↓ + 원/달러 ↓ → 달러 약세 국면 (글로벌 유동성 확대, 위험자산 선호, 신흥국 자금 유입)',
     },
   },
 ]
