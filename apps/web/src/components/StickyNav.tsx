@@ -42,7 +42,7 @@ export default function StickyNav({ sections }: StickyNavProps) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      const offset = 120 // sticky header 높이만큼 오프셋
+      const offset = 180 // sticky header 높이 + 여유 공간
       const elementPosition = element.getBoundingClientRect().top
       const offsetPosition = elementPosition + window.pageYOffset - offset
 

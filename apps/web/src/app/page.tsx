@@ -190,7 +190,7 @@ export default function Home() {
         </section>
 
         {/* 2. 전체 지표 현황 */}
-        <section id="indicators-overview" className="mb-16 scroll-mt-32">
+        <section id="indicators-overview" className="mb-16 scroll-mt-48">
           <div className="mb-6">
             <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               📊 전체 지표 현황
@@ -203,7 +203,7 @@ export default function Home() {
         </section>
 
         {/* 3. 환경별 심층 분석 */}
-        <section id="environment-analysis" className="mb-16 scroll-mt-32">
+        <section id="environment-analysis" className="mb-16 scroll-mt-48">
           <div className="mb-8">
             <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               📈 환경별 심층 분석
@@ -221,7 +221,7 @@ export default function Home() {
         </section>
 
         {/* 4. 개별 지표 상세 차트 */}
-        <section id="individual-indicators" className="mb-16 scroll-mt-32">
+        <section id="individual-indicators" className="mb-16 scroll-mt-48">
           <div className="mb-8">
             <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               📉 개별 지표 상세
