@@ -144,14 +144,31 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
   // Risk Environment 그룹에서만 VIX를 역방향 처리
   const inverseSymbols = group.id === 'risk_environment' ? ['VIX'] : []
 
-  // 평균 Z-Score 계산
-  const avgZScore = symbols.reduce((sum, symbol) => {
+  // 평균 Z-Score 계산 및 각 지표 상태
+  const indicatorStates = symbols.map(symbol => {
     const latestData = data[symbol]?.[data[symbol].length - 1]
-    if (!latestData?.zscore) return sum
-    const zscore = latestData.zscore
+    const zscore = latestData?.zscore || 0
     const adjustedZScore = inverseSymbols.includes(symbol) ? -zscore : zscore
-    return sum + adjustedZScore
-  }, 0) / symbols.length
+    return {
+      symbol,
+      originalZScore: zscore,
+      adjustedZScore,
+      direction: adjustedZScore > 0.5 ? '↑' : adjustedZScore < -0.5 ? '↓' : '→'
+    }
+  })
+
+  const avgZScore = indicatorStates.reduce((sum, s) => sum + s.adjustedZScore, 0) / symbols.length
+
+  // 동적 해석 생성
+  const generateDynamicInterpretation = () => {
+    const summary = indicatorStates.map(s => `${s.symbol} ${s.direction}`).join(', ')
+
+    if (avgZScore > 0) {
+      return `${summary} → ${group.interpretation.positive}`
+    } else {
+      return `${summary} → ${group.interpretation.negative}`
+    }
+  }
 
   const chartData = {
     labels,
@@ -280,10 +297,10 @@ export default function IndicatorGroupChart({ group, days = 90 }: Props) {
             : 'bg-red-50 border-red-200'
         }`}>
           <div className={`text-xs font-semibold mb-2 ${getZScoreTextColor(avgZScore)}`}>
-            💡 현재 상황 ({avgZScore >= 0 ? '평균 Z-Score 양수' : '평균 Z-Score 음수'})
+            💡 현재 상황 (평균 Z-Score {avgZScore >= 0 ? '+' : ''}{avgZScore.toFixed(2)}σ)
           </div>
-          <div className="text-sm text-gray-800 font-medium">
-            {avgZScore > 0 ? group.interpretation.positive : group.interpretation.negative}
+          <div className="text-sm text-gray-800 font-medium whitespace-pre-wrap">
+            {generateDynamicInterpretation()}
           </div>
         </div>
 

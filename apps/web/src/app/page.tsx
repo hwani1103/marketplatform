@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import IndicatorCardWithChart from '@/components/IndicatorCardWithChart'
 import AnalyticsHeatmap from '@/components/AnalyticsHeatmap'
+import FinalMarketRegime from '@/components/FinalMarketRegime'
 import IndicatorGroupChart from '@/components/IndicatorGroupChart'
 import MarketRegimeSummary from '@/components/MarketRegimeSummary'
 import { INDICATOR_GROUPS } from '@/lib/indicator-groups'
@@ -182,13 +183,15 @@ export default function Home() {
             거시 시장 상태를 한눈에 확인하세요
           </p>
           <div className="flex items-center gap-4 flex-wrap">
-            <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg">
-              ✓ {indicators.length}개 지표 실시간 수집
-            </span>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               마지막 업데이트: {new Date().toLocaleString('ko-KR')}
             </span>
           </div>
+        </div>
+
+        {/* Final Market Regime - 가장 중요한 정보를 맨 위에 */}
+        <div className="mb-16">
+          <FinalMarketRegime />
         </div>
 
         {/* Analytics Heatmap */}
@@ -263,35 +266,6 @@ export default function Home() {
             </div>
           )
         })}
-
-        {/* Info Banner */}
-        <div className="mt-16 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl p-[2px] shadow-2xl">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-8">
-            <div className="flex items-start gap-4">
-              <div className="text-5xl">🎉</div>
-              <div>
-                <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  모든 지표 차트로 확인 가능!
-                </h2>
-                <p className="text-gray-700 dark:text-gray-300 mb-3 text-lg">
-                  16개 거시경제 지표를 실시간으로 추적하고 있습니다.
-                </p>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>✓ 180일간 추세를 미니 차트로 표시</li>
-                  <li>✓ 차트에 마우스 올리면 날짜와 값 표시</li>
-                  <li>✓ 변화율(%) 자동 계산</li>
-                  <li>✓ FRED API + Yahoo Finance 데이터 통합</li>
-                  <li>✓ 카테고리별 구분으로 쉬운 탐색</li>
-                </ul>
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    📌 다음 단계: Layer 1 계산 엔진 (MA, Z-score) 구현
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </main>
   )
