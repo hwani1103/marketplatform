@@ -5,6 +5,7 @@ import IndicatorCardWithChart from '@/components/IndicatorCardWithChart'
 import AnalyticsHeatmap from '@/components/AnalyticsHeatmap'
 import FinalMarketRegime from '@/components/FinalMarketRegime'
 import IndicatorGroupChart from '@/components/IndicatorGroupChart'
+import StickyNav from '@/components/StickyNav'
 import { INDICATOR_GROUPS } from '@/lib/indicator-groups'
 
 interface Indicator {
@@ -170,26 +171,26 @@ export default function Home() {
 
   const categoryOrder = ['주식 지수', '변동성', '금리', '원자재', '통화', '인플레이션']
 
+  const navSections = [
+    { id: 'market-regime', label: '최종 시장 국면 판단' },
+    { id: 'indicators-overview', label: '전체 지표 현황' },
+    { id: 'environment-analysis', label: '환경별 심층 분석' },
+    { id: 'individual-indicators', label: '개별 지표 상세' },
+  ]
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Market Regime Platform
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
-            거시경제 지표 기반 시장 국면 분석
-          </p>
-        </div>
+      {/* Sticky Navigation */}
+      <StickyNav sections={navSections} />
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* 1. 최종 시장 국면 판단 */}
-        <div className="mb-16">
+        <section id="market-regime" className="mb-16 scroll-mt-32">
           <FinalMarketRegime />
-        </div>
+        </section>
 
         {/* 2. 전체 지표 현황 */}
-        <div className="mb-16">
+        <section id="indicators-overview" className="mb-16 scroll-mt-32">
           <div className="mb-6">
             <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               📊 전체 지표 현황
@@ -199,10 +200,10 @@ export default function Home() {
             </p>
           </div>
           <AnalyticsHeatmap />
-        </div>
+        </section>
 
         {/* 3. 환경별 심층 분석 */}
-        <div className="mb-16">
+        <section id="environment-analysis" className="mb-16 scroll-mt-32">
           <div className="mb-8">
             <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               📈 환경별 심층 분석
@@ -217,10 +218,10 @@ export default function Home() {
               <IndicatorGroupChart key={group.id} group={group} days={90} />
             ))}
           </div>
-        </div>
+        </section>
 
         {/* 4. 개별 지표 상세 차트 */}
-        <div className="mb-16">
+        <section id="individual-indicators" className="mb-16 scroll-mt-32">
           <div className="mb-8">
             <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
               📉 개별 지표 상세

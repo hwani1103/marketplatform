@@ -169,20 +169,43 @@ export default function FinalMarketRegime() {
         </div>
 
         {/* 추가 설명 */}
-        <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="text-sm text-blue-900">
-            <strong>💡 시장 국면(Market Regime)이란?</strong>
-            <p className="mt-2">
-              위험자산 선호도, 금리 환경, 인플레이션 압력 등 여러 거시경제 지표를 종합하여
-              현재 시장이 어떤 상태인지를 판단한 결과입니다. 이를 통해 어떤 자산에 투자하는 것이
-              유리한지 가늠할 수 있습니다.
-            </p>
-            <ul className="mt-3 space-y-1 ml-4">
-              <li>• <strong>골디락스</strong>: 모든 조건이 이상적. 주식 적극 매수</li>
-              <li>• <strong>Risk-On</strong>: 위험자산 선호. 주식/신흥국 투자 유리</li>
-              <li>• <strong>Risk-Off</strong>: 안전자산 선호. 채권/금 투자 유리</li>
-              <li>• <strong>혼조</strong>: 방향성 불명확. 관망 또는 분산 투자</li>
-            </ul>
+        <div className="mt-8 space-y-6">
+          {/* 시장 국면 설명 */}
+          <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm text-blue-900">
+              <strong>💡 시장 국면(Market Regime)이란?</strong>
+              <p className="mt-2">
+                위험자산 선호도, 금리 환경, 인플레이션 압력 등 여러 거시경제 지표를 종합하여
+                현재 시장이 어떤 상태인지를 판단한 결과입니다. 이를 통해 어떤 자산에 투자하는 것이
+                유리한지 가늠할 수 있습니다.
+              </p>
+              <ul className="mt-3 space-y-1 ml-4">
+                <li>• <strong>골디락스</strong>: 모든 조건이 이상적. 주식 적극 매수</li>
+                <li>• <strong>Risk-On</strong>: 위험자산 선호. 주식/신흥국 투자 유리</li>
+                <li>• <strong>Risk-Off</strong>: 안전자산 선호. 채권/금 투자 유리</li>
+                <li>• <strong>혼조</strong>: 방향성 불명확. 관망 또는 분산 투자</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Z-Score 설명 */}
+          <div className="p-6 bg-purple-50 border border-purple-200 rounded-lg">
+            <div className="text-sm text-purple-900">
+              <strong>📊 평균 Z-Score란?</strong>
+              <p className="mt-2">
+                Z-Score는 현재 값이 과거 평균에서 얼마나 떨어져 있는지를 <strong>표준편차(σ) 단위</strong>로 표시한 통계 지표입니다.
+              </p>
+              <ul className="mt-3 space-y-1 ml-4">
+                <li>• <strong>+2σ 이상</strong>: 매우 높은 수준 (상위 2.5%, 과매수 구간)</li>
+                <li>• <strong>+1σ ~ +2σ</strong>: 평균보다 높음 (상위 16~2.5%)</li>
+                <li>• <strong>-1σ ~ +1σ</strong>: 정상 범위 (68% 구간)</li>
+                <li>• <strong>-2σ ~ -1σ</strong>: 평균보다 낮음 (하위 16~2.5%)</li>
+                <li>• <strong>-2σ 이하</strong>: 매우 낮은 수준 (하위 2.5%, 과매도 구간)</li>
+              </ul>
+              <p className="mt-3 text-xs">
+                예: SPX Z-Score +2.5 → S&P500이 과거 대비 매우 높은 수준 (강세장)
+              </p>
+            </div>
           </div>
         </div>
       </div>

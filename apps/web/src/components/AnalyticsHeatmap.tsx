@@ -197,21 +197,9 @@ export default function AnalyticsHeatmap() {
         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           📊 Layer 1: Analytics Heatmap
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-3">
-          모든 지표의 역사적 상대적 위치 (Z-Score)
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          모든 지표의 역사적 상대적 위치 (Z-Score 기반)
         </p>
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="text-sm text-blue-900 dark:text-blue-100">
-            <strong>💡 Z-Score란?</strong> 현재 값이 과거 평균에서 얼마나 떨어져 있는지를 표준편차 단위로 표시한 값입니다.
-            <ul className="mt-2 ml-4 space-y-1 text-xs">
-              <li>• <strong>0</strong> = 역사적 평균 수준</li>
-              <li>• <strong>+1σ ~ +2σ</strong> = 평균보다 높음 (상위 16~2%)</li>
-              <li>• <strong>+2σ 이상</strong> = 매우 높음, 과매수 (상위 2%)</li>
-              <li>• <strong>-1σ ~ -2σ</strong> = 평균보다 낮음 (하위 16~2%)</li>
-              <li>• <strong>-2σ 이하</strong> = 매우 낮음, 과매도 (하위 2%)</li>
-            </ul>
-          </div>
-        </div>
       </div>
 
       <div className="space-y-3">
