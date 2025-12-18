@@ -2,6 +2,25 @@
 
 import React, { useEffect, useState } from 'react'
 
+// 지표 한글 이름 매핑
+const SYMBOL_NAMES_KO: Record<string, string> = {
+  SPX: 'S&P 500',
+  NASDAQ: '나스닥',
+  RUSSELL_2000: '러셀 2000',
+  VIX: 'VIX',
+  US_10Y: '미국 10년물',
+  US_2Y: '미국 2년물',
+  US_10Y_REAL: '실질금리 10년',
+  CPI_YOY: 'CPI',
+  CORE_CPI_YOY: '근원 CPI',
+  PCE_YOY: 'PCE',
+  INFLATION_EXP: '인플레 기대',
+  WTI: 'WTI 원유',
+  GOLD: '금',
+  DXY: '달러인덱스',
+  USD_KRW: '원/달러',
+}
+
 interface MarketRegimeData {
   regime: string
   regimeKo: string
@@ -114,7 +133,7 @@ export default function FinalMarketRegime() {
             <div className="space-y-1">
               {regime.layers.risk.indicators.map((ind) => (
                 <div key={ind.symbol} className="flex justify-between text-xs">
-                  <span className="text-gray-600">{ind.symbol}</span>
+                  <span className="text-gray-600 font-medium">{SYMBOL_NAMES_KO[ind.symbol] || ind.symbol}</span>
                   <span className={ind.zscore > 0 ? 'text-green-600' : 'text-red-600'}>
                     {ind.zscore >= 0 ? '+' : ''}{ind.zscore.toFixed(2)}σ
                   </span>
@@ -136,7 +155,7 @@ export default function FinalMarketRegime() {
             <div className="space-y-1">
               {regime.layers.liquidity.indicators.map((ind) => (
                 <div key={ind.symbol} className="flex justify-between text-xs">
-                  <span className="text-gray-600">{ind.symbol}</span>
+                  <span className="text-gray-600 font-medium">{SYMBOL_NAMES_KO[ind.symbol] || ind.symbol}</span>
                   <span className={ind.zscore > 0 ? 'text-green-600' : 'text-red-600'}>
                     {ind.zscore >= 0 ? '+' : ''}{ind.zscore.toFixed(2)}σ
                   </span>
@@ -158,7 +177,7 @@ export default function FinalMarketRegime() {
             <div className="space-y-1">
               {regime.layers.inflation.indicators.map((ind) => (
                 <div key={ind.symbol} className="flex justify-between text-xs">
-                  <span className="text-gray-600">{ind.symbol}</span>
+                  <span className="text-gray-600 font-medium">{SYMBOL_NAMES_KO[ind.symbol] || ind.symbol}</span>
                   <span className={ind.zscore > 0 ? 'text-green-600' : 'text-red-600'}>
                     {ind.zscore >= 0 ? '+' : ''}{ind.zscore.toFixed(2)}σ
                   </span>
