@@ -20,10 +20,10 @@ class FREDClient:
         'US_2Y': 'DGS2',            # 2-Year Treasury Constant Maturity Rate
         'US_10Y_REAL': 'DFII10',    # 10-Year Treasury Inflation-Indexed Security
 
-        # 인플레이션
-        'CPI_YOY': 'CPIAUCSL',      # Consumer Price Index
-        'CORE_CPI_YOY': 'CPILFESL', # Core CPI (less food & energy)
-        'PCE_YOY': 'PCEPI',         # Personal Consumption Expenditures
+        # 인플레이션 (전년비 % 변화율)
+        'CPI_YOY': 'CPIAUCSL_PC1',      # CPI Year-over-Year % Change
+        'CORE_CPI_YOY': 'CPILFESL_PC1', # Core CPI Year-over-Year % Change
+        'PCE_YOY': 'PCEPI_PC1',         # PCE Year-over-Year % Change
 
         # 기타
         'INFLATION_EXP_5Y': 'T5YIE', # 5-Year Breakeven Inflation Rate
