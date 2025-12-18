@@ -67,6 +67,9 @@ export default function MiniChart({
           style: 2,
         },
       },
+      watermark: {
+        visible: false,
+      },
       handleScroll: false,
       handleScale: false,
     })

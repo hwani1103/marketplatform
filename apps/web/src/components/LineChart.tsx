@@ -40,6 +40,9 @@ export default function LineChart({ data, color = '#2563eb', height = 300 }: Lin
       rightPriceScale: {
         borderColor: '#374151',
       },
+      watermark: {
+        visible: false,
+      },
     })
 
     chartRef.current = chart
