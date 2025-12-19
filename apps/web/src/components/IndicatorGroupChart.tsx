@@ -200,7 +200,29 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
     }
   })
 
-  const avgZScore = indicatorStates.reduce((sum, s) => sum + s.adjustedZScore, 0) / symbols.length
+  // 인플레이션 그룹은 Max Logic 적용
+  let avgZScore: number
+  if (group.id === 'inflation_commodity') {
+    // CPI 지표 중 최대값
+    const cpiSymbols = ['CPI_YOY', 'CORE_CPI_YOY', 'PCE_YOY']
+    const cpiStates = indicatorStates.filter(s => cpiSymbols.includes(s.symbol))
+    const maxCPI = cpiStates.length > 0
+      ? Math.max(...cpiStates.map(s => s.adjustedZScore))
+      : 0
+
+    // 원자재 평균
+    const commoditySymbols = ['INFLATION_EXP_5Y', 'WTI', 'GOLD']
+    const commodityStates = indicatorStates.filter(s => commoditySymbols.includes(s.symbol))
+    const commodityAvg = commodityStates.length > 0
+      ? commodityStates.reduce((sum, s) => sum + s.adjustedZScore, 0) / commodityStates.length
+      : 0
+
+    // 최종: CPI Max 60% + 원자재 평균 40%
+    avgZScore = (maxCPI * 0.6) + (commodityAvg * 0.4)
+  } else {
+    // 다른 그룹은 단순 평균
+    avgZScore = indicatorStates.reduce((sum, s) => sum + s.adjustedZScore, 0) / symbols.length
+  }
 
   // 동적 해석 생성
   const generateDynamicInterpretation = () => {
@@ -241,7 +263,7 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
         backgroundColor: colors[index % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
         borderWidth: 2,
         tension: 0.3,
-        pointRadius: 2,  // 포인트 표시 (월별 데이터 확인용)
+        pointRadius: 0,  // 점 표시 안함 (라인만 표시)
         pointHoverRadius: 6,
         spanGaps: true,
       }
