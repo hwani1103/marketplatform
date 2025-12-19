@@ -172,13 +172,15 @@ export default function DebugPanel() {
                 NASDAQ: '나스닥',
                 RUSSELL_2000: '러셀 2000',
                 VIX: 'VIX',
+                USD_KRW: 'USD_KRW',
               }[ind.symbol] || ind.symbol
             const direction = ind.zscore > 0.5 ? '↑' : ind.zscore < -0.5 ? '↓' : '→'
+            const inverseLabel = ind.isInverse ? ' (역)' : ''
             return (
               <p key={ind.symbol}>
                 {nameKo.padEnd(15, ' ')} : {direction} (Z-Score:{' '}
                 {ind.zscore >= 0 ? '+' : ''}
-                {ind.zscore.toFixed(2)}σ)
+                {ind.zscore.toFixed(2)}σ{inverseLabel})
               </p>
             )
           })}
@@ -199,6 +201,7 @@ export default function DebugPanel() {
                     NASDAQ: '나스닥',
                     RUSSELL_2000: '러셀 2000',
                     VIX: 'VIX',
+                    USD_KRW: 'USD_KRW',
                   }[ind.symbol] || ind.symbol
                 const direction = ind.zscore > 0.5 ? '↑' : ind.zscore < -0.5 ? '↓' : '→'
                 return `${nameKo} ${direction}`
@@ -206,8 +209,8 @@ export default function DebugPanel() {
               .join(', ')}{' '}
             →{' '}
             {marketRegime.layers.risk.avgZScore > 0
-              ? '주가 3개 지수 강세 + VIX 하락 → Risk-On 국면 (위험자산 선호)'
-              : '주가 3개 지수 약세 + VIX 상승 → Risk-Off 국면 (안전자산 선호)'}
+              ? 'S&P 500 강세 + VIX 하락 + 원/달러 하락 → Risk-On 국면 (위험자산 선호)'
+              : 'S&P 500 약세 + VIX 상승 + 원/달러 상승 → Risk-Off 국면 (안전자산 선호)'}
           </p>
         </div>
       </section>
@@ -356,7 +359,8 @@ export default function DebugPanel() {
           <p className="text-yellow-300 font-bold mt-2">판단 로직:</p>
           <div className="text-xs text-gray-400 space-y-1">
             <p>
-              if (riskAvg {'>'} 1 && liquidityAvg {'<'} 0 && inflationAvg {'<'} 0) → 골디락스
+              if (riskAvg {'>'} 1 && liquidityAvg {'<'} 0 && liquidityAvg {'>'} -1.2 && inflationAvg {'<'} 0.5 && inflationAvg {'>'} -1.5) → 골디락스{' '}
+              {marketRegime.regime === 'GOLDILOCKS' && '← 현재 여기'}
             </p>
             <p>
               else if (riskAvg {'>'} 0.5) → Risk-On{' '}
@@ -368,6 +372,15 @@ export default function DebugPanel() {
             </p>
             <p>
               else → 혼조 {marketRegime.regime === 'MIXED' && '← 현재 여기'}
+            </p>
+            <p className="text-yellow-300 mt-2">
+              * 골디락스 조건: 주가 강세 + 금리 적당히 낮음 (극단값 배제) + 물가 안정
+            </p>
+            <p className="text-yellow-300">
+              * 위험자산 가중치: S&P 500 단독 사용 (주식 지수 과중복 방지)
+            </p>
+            <p className="text-yellow-300">
+              * 인플레이션 로직: CPI Max 60% + 원자재 평균 40% (금 가중치 50% 축소)
             </p>
           </div>
 

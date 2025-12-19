@@ -10,8 +10,8 @@ export async function GET() {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
-    // Layer 2: Risk Environment (한국 투자자 중심으로 USD_KRW 추가)
-    const riskSymbols = ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX', 'USD_KRW']
+    // Layer 2: Risk Environment (주식 과중복 방지 위해 S&P만 사용)
+    const riskSymbols = ['SPX', 'VIX', 'USD_KRW']
     const riskDataPromises = riskSymbols.map(async (symbol) => {
       const data = await prisma.indicatorRaw.findMany({
         where: { symbol, timestamp: { gte: startDate } },
@@ -23,13 +23,19 @@ export async function GET() {
 
     const riskData = await Promise.all(riskDataPromises)
 
-    // 각 지표의 Z-Score 계산 (252일 window)
+    // 각 지표의 Z-Score 계산 (252거래일 = 약 1년 rolling window)
     const riskZScores = riskData.map(({ symbol, data }) => {
-      if (data.length === 0) return { symbol, zscore: 0 }
+      if (data.length === 0) return { symbol, zscore: 0, originalZScore: 0, isInverse: false }
       const values = data.map(d => Number(d.value))
-      const zscore = calculateZScore(values, 252) ?? 0
+      const originalZScore = calculateZScore(values, 252) ?? 0
+      const isInverse = symbol === 'VIX' || symbol === 'USD_KRW'
       // VIX, USD_KRW는 역방향 (높을수록 Risk-Off)
-      return { symbol, zscore: (symbol === 'VIX' || symbol === 'USD_KRW') ? -zscore : zscore }
+      return {
+        symbol,
+        zscore: isInverse ? -originalZScore : originalZScore,
+        originalZScore,
+        isInverse
+      }
     })
 
     const riskAvg = riskZScores.reduce((sum, r) => sum + r.zscore, 0) / riskZScores.length
@@ -78,14 +84,17 @@ export async function GET() {
     const cpiZScores = inflationZScores.filter(z => cpiSymbols.includes(z.symbol)).map(z => z.zscore)
     const maxCPI = cpiZScores.length > 0 ? Math.max(...cpiZScores) : 0
 
-    const commoditySymbols = ['INFLATION_EXP_5Y', 'WTI', 'GOLD']
-    const commodityZScores = inflationZScores.filter(z => commoditySymbols.includes(z.symbol))
-    const commodityAvg = commodityZScores.length > 0
-      ? commodityZScores.reduce((sum, z) => sum + z.zscore, 0) / commodityZScores.length
-      : 0
+    // 금은 안전자산 수요가 섞여있으므로 가중치 절반 적용
+    const inflationExpZScore = inflationZScores.find(z => z.symbol === 'INFLATION_EXP_5Y')?.zscore ?? 0
+    const wtiZScore = inflationZScores.find(z => z.symbol === 'WTI')?.zscore ?? 0
+    const goldZScore = inflationZScores.find(z => z.symbol === 'GOLD')?.zscore ?? 0
+    const commodityAvg = (inflationExpZScore + wtiZScore + goldZScore * 0.5) / 2.5
 
     // 최종: CPI Max 60% + 원자재 평균 40%
     const inflationAvg = (maxCPI * 0.6) + (commodityAvg * 0.4)
+
+    // 금 과매수 + 실물 인플레 안정 = 안전자산 수요 (지정학/금융 불안)
+    const goldWarning = goldZScore > 2 && maxCPI < 0
 
     // Final Market Regime 판단
     let regime = 'NEUTRAL'
@@ -93,7 +102,8 @@ export async function GET() {
     let description = ''
     let color = 'gray'
 
-    if (riskAvg > 1 && liquidityAvg < 0 && inflationAvg < 0) {
+    // 골디락스: 주가 강세 + 금리 적당히 낮음 + 물가 안정 (극단값 배제)
+    if (riskAvg > 1 && liquidityAvg < 0 && liquidityAvg > -1.2 && inflationAvg < 0.5 && inflationAvg > -1.5) {
       regime = 'GOLDILOCKS'
       regimeKo = '골디락스 (이상적 환경)'
       description = '주가 강세 + 금리 안정 + 물가 안정 → 가장 이상적인 투자 환경입니다. 위험자산을 적극 매수하기 좋은 시기입니다.'
@@ -123,6 +133,11 @@ export async function GET() {
       regimeKo = '혼조 (방향성 불명확)'
       description = '지표들이 엇갈리고 있어 시장 방향성이 불명확합니다. 관망하거나 분산 투자가 적절합니다.'
       color = 'yellow'
+    }
+
+    // 금 과매수 경고 추가
+    if (goldWarning) {
+      description += ' (주의: 금 가격이 극단적으로 상승 중입니다. 지정학적 리스크 또는 금융시장 불안 요인이 있을 수 있습니다.)'
     }
 
     // 가장 최근 데이터의 timestamp 찾기
@@ -158,6 +173,13 @@ export async function GET() {
         },
       },
       calculatedAt: new Date(latestTimestamp).toISOString(),
+      metadata: {
+        zscoreWindow: '252거래일 (약 1년)',
+        thresholds: '±0.5σ (시장 변화에 민감하게 반응). 보수적 판단은 ±1σ 이상 권장',
+        riskWeighting: 'S&P 500 단독 사용 (주식 지수 과중복 방지)',
+        inflationLogic: 'CPI Max 60% + 원자재 평균 40% (금 가중치 50% 축소)',
+        notes: '골디락스 조건: 주가 강세 + 금리 적당히 낮음 (극단값 배제) + 물가 안정'
+      }
     })
   } catch (error) {
     console.error('Error calculating market regime:', error)

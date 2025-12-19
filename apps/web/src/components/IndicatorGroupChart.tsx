@@ -210,12 +210,15 @@ export default function IndicatorGroupChart({ group, days = 365 }: Props) {
       ? Math.max(...cpiStates.map(s => s.adjustedZScore))
       : 0
 
-    // 원자재 평균
-    const commoditySymbols = ['INFLATION_EXP_5Y', 'WTI', 'GOLD']
-    const commodityStates = indicatorStates.filter(s => commoditySymbols.includes(s.symbol))
-    const commodityAvg = commodityStates.length > 0
-      ? commodityStates.reduce((sum, s) => sum + s.adjustedZScore, 0) / commodityStates.length
-      : 0
+    // 원자재 평균 (금은 안전자산 수요가 섞여있으므로 가중치 절반)
+    const inflationExpState = indicatorStates.find(s => s.symbol === 'INFLATION_EXP_5Y')
+    const wtiState = indicatorStates.find(s => s.symbol === 'WTI')
+    const goldState = indicatorStates.find(s => s.symbol === 'GOLD')
+
+    const inflationExpZScore = inflationExpState?.adjustedZScore ?? 0
+    const wtiZScore = wtiState?.adjustedZScore ?? 0
+    const goldZScore = goldState?.adjustedZScore ?? 0
+    const commodityAvg = (inflationExpZScore + wtiZScore + goldZScore * 0.5) / 2.5
 
     // 최종: CPI Max 60% + 원자재 평균 40%
     avgZScore = (maxCPI * 0.6) + (commodityAvg * 0.4)

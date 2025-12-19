@@ -22,11 +22,11 @@ export const INDICATOR_GROUPS: IndicatorGroup[] = [
     name: '위험자산 선호도',
     nameEn: 'Risk Environment',
     description: '주식시장, 변동성, 환율 지표를 통해 투자자들의 위험 선호 성향을 파악',
-    symbols: ['SPX', 'NASDAQ', 'RUSSELL_2000', 'VIX', 'USD_KRW'],
-    detailedExplanation: '• SPX, NASDAQ, RUSSELL_2000: 주가 지수 (상승 = Risk-On)\n• VIX: 변동성 지수 (상승 = Risk-Off, 역방향 처리)\n• USD_KRW: 원/달러 환율 (상승 = 자금 이탈, Risk-Off, 역방향 처리)',
+    symbols: ['SPX', 'VIX', 'USD_KRW'],
+    detailedExplanation: '• SPX: S&P 500 지수 (미국 대표 주가, 상승 = Risk-On)\n• VIX: 변동성 지수 (상승 = Risk-Off, 역방향 처리)\n• USD_KRW: 원/달러 환율 (상승 = 자금 이탈, Risk-Off, 역방향 처리)\n* 주식 지수 과중복 방지를 위해 S&P 500만 사용',
     interpretation: {
-      positive: '주가 3개 지수 강세 + VIX 하락 + 원/달러 하락 → Risk-On 국면 (위험자산 선호, 신흥국 자금 유입)',
-      negative: '주가 3개 지수 약세 + VIX 상승 + 원/달러 상승 → Risk-Off 국면 (안전자산 선호, 신흥국 자금 이탈)',
+      positive: 'S&P 500 강세 + VIX 하락 + 원/달러 하락 → Risk-On 국면 (위험자산 선호, 신흥국 자금 유입)',
+      negative: 'S&P 500 약세 + VIX 상승 + 원/달러 상승 → Risk-Off 국면 (안전자산 선호, 신흥국 자금 이탈)',
     },
   },
   {

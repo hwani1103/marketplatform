@@ -32,7 +32,7 @@ interface MarketRegimeData {
       avgZScore: number
       state: string
       stateKo: string
-      indicators: { symbol: string; zscore: number }[]
+      indicators: { symbol: string; zscore: number; originalZScore?: number; isInverse?: boolean }[]
     }
     liquidity: {
       avgZScore: number
@@ -46,6 +46,13 @@ interface MarketRegimeData {
       stateKo: string
       indicators: { symbol: string; zscore: number }[]
     }
+  }
+  metadata?: {
+    zscoreWindow: string
+    thresholds: string
+    riskWeighting: string
+    inflationLogic: string
+    notes: string
   }
 }
 
@@ -133,9 +140,17 @@ export default function FinalMarketRegime() {
             <div className="space-y-1">
               {regime.layers.risk.indicators.map((ind) => (
                 <div key={ind.symbol} className="flex justify-between text-xs">
-                  <span className="text-gray-600 font-medium">{SYMBOL_NAMES_KO[ind.symbol] || ind.symbol}</span>
+                  <span className="text-gray-600 font-medium">
+                    {SYMBOL_NAMES_KO[ind.symbol] || ind.symbol}
+                    {ind.isInverse && <span className="text-gray-400 ml-1">(역)</span>}
+                  </span>
                   <span className={ind.zscore > 0 ? 'text-green-600' : 'text-red-600'}>
                     {ind.zscore >= 0 ? '+' : ''}{ind.zscore.toFixed(2)}σ
+                    {ind.isInverse && ind.originalZScore !== undefined && (
+                      <span className="text-gray-400 text-[10px] ml-1">
+                        (원본: {ind.originalZScore >= 0 ? '+' : ''}{ind.originalZScore.toFixed(2)}σ)
+                      </span>
+                    )}
                   </span>
                 </div>
               ))}
@@ -226,6 +241,25 @@ export default function FinalMarketRegime() {
               </p>
             </div>
           </div>
+
+          {/* 메타데이터 (계산 방식 설명) */}
+          {regime.metadata && (
+            <div className="p-6 bg-gray-50 border border-gray-300 rounded-lg">
+              <div className="text-sm text-gray-800">
+                <strong>⚙️ 계산 방식 및 개선사항</strong>
+                <ul className="mt-3 space-y-2 ml-4">
+                  <li>• <strong>Z-Score 계산 기간</strong>: {regime.metadata.zscoreWindow}</li>
+                  <li>• <strong>판단 임계값</strong>: {regime.metadata.thresholds}</li>
+                  <li>• <strong>위험자산 가중치</strong>: {regime.metadata.riskWeighting}</li>
+                  <li>• <strong>인플레이션 로직</strong>: {regime.metadata.inflationLogic}</li>
+                  <li>• <strong>골디락스 조건</strong>: {regime.metadata.notes}</li>
+                </ul>
+                <p className="mt-3 text-xs text-gray-600">
+                  주식 지수 과중복 방지, 금 안전자산 특성 반영, 극단값 배제 등 경제학적 논리를 개선했습니다.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
